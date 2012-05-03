@@ -1,0 +1,61 @@
+DESCRIPTION
+-----------
+Attic is a file sharing network that distributes input files to numerous "data centers" (DC) around the network.  Periodically the data centers contact the centralized "data lookup server" (DLS) to request files to replicate.  They then contact other data centers to download the file.  End users contact the DLS directly with their attic URL, and then the individual DCs to download the files.  To publish a file to attic, the java tools can be used, or alternatively the curl-based scripts can be used in conjunction with a "data seed" (DS) to seed the data to the network.  
+
+The latest version of Attic can be found on GitHub, under the following address:
+        https://github.com/ikelley/Attic
+
+For an overview of the Attic software, and up-to-date documentation, please see:
+	http://www.atticfs.org
+
+It is highly recommended that you read the user-guide before continuing, to get a better idea of exactly how Attic works. It is located at the following address, or can be built from the sources located here.
+        http://www.atticfs.org/user-guide/index.html
+
+Please note that the BOINC client for this project, named "libafs" is located in another GitHub repository.  LibAFS enables native (legacy) BOINC applications to contact the Attic network through a local web proxy that understands the Attic protocol.  LibAFS is available at:
+        https://github.com/keyz182/afs_proxy 
+
+For other applications, such as XtremWeb, which can use Java libaries, Attic can natively be used by simply adding the jar and registering a attic:// protocol handler.
+
+
+DIRECTORY STRUCTURE
+-------------------
+core/   Core Attic software module.  Provides the Attic components for running the network.
+key/    Example of how to use the SSL enhancements by enabling a keystore.
+lib/    External libraries.
+src/    Website and documentation
+utils/  Example deployment scripts, which can be used to start services and publish files.
+
+MAVEN TARGETS
+-------------
+The following are the maven targets for the main project.  The main project contains the sub-projects of "core" and "key."  The core project contains most of the interesting code for Attic, such as all the network coding, and agents.  The key project contains some basic tools to enable the keystore.  Note that for the keystores to work (to enable DN-based ACLs for CRUD operations) you will have to generate and deploy certificates to each network entity.
+
+mvn install    Downloads all the package dependencies, compiles, and installs resulting Attic
+               jar to your local (e.g., ~/.m2) repository
+mvn compile    Compiles the code in all the modules.
+mvn package    Creates the attic-all-<version>.jar file that the scripts in "utils" can use.
+    	       ./core/all/target/attic-all-2.0.jar
+mvn site       Deploys the website to target/site/
+mvn clean      Removes complied code.
+mvn idea:idea  Generates the IntelliJ Idea descriptor for the project (good IDE)
+mvn deploy     Would deploy to website if pom.xml is correctly configured to your setup 
+
+REQUIREMENTS
+------------
+Java 5
+Some patience and understanding ;)
+
+USEFUL TIPS
+-----------
+Once you have started an Attic server, you can configure it by going to:
+   http://URL:PORT/attic/config
+
+To view the files that you have located on your attic network, query the DLS with the following:
+   http://DLS-URL:PORT/dl/meta/pointer
+
+To view information about a particular file, such as its hash information, etc, try:
+   http://DLS-URL:PORT/dc/meta/pointer/<POINTERID>
+
+Note that most commands can also be run on the Data Centers themselves, in addition to the Data Lookup Server, to query their local caches.
+
+
+
