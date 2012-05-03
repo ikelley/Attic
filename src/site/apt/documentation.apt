@@ -1,0 +1,63 @@
+									---------
+								    Attic File System
+									---------
+								       Ian Kelley
+									---------
+								      3 February 2012 
+
+User & Developer Guides
+
+	For an in-depth look at the Attic implementation, how to use it, and a description of the different network entities and their roles, please refer to our online documentation available under the following links:
+	
+	* {{{/user-guide/index.html}User Guide}}.
+
+~~[./images/java.png]
+
+Client Application
+
+~~[./images/client.png]
+	Attic currently has a client application written in Java (1.5 and above) that allows
+	for accessing the data shared upon the network.  This client application should run 
+	on any Java-supported platform. 
+
+	
+	You can download the client as a self-containing jar file.  Simply download and then
+	run using the command <<java -jar attic-version.jar URL>>.  
+
+Data Caching Application
+
+~~[./images/datacenter.png]
+
+	The Attic <<Data Center>>, which shares files on the network is a separate program to the
+	client application, and similarly is written in Java 5.  Download and run this program if
+	you are interesting in helping to share files on the network and contribute your bandwidth
+	to an Attic-enabled project.
+
+Data Lookup Service
+
+~~[./images/datalookupservice.png]
+
+	In addition to the client and data center applications.  Attic also contains a third major component, the 
+	<<Data Lookup Service>>.  This service acts as a metadata repository, which keeps track of where files are
+	located on the network, and should generally only be deployed on trusted machines or servers.
+
+BOINC Server Plugin
+
+~~[./images/boincpluggin.png]
+
+	In addition to the core Attic software, there is also a BOINC plugin that is being developed to support the BOINC
+	community and interface the BOINC server data with the Attic infrastructure.  This plugin facilitates the injection 
+	of Attic URLs into the BOINC workunit descriptions, so that BOINC clients will connect to the Attic data centers to
+	download files.
+
+	More information about the BOINC plugin can be found under [./libafs/index.html]
+
+Light-weight publication and retrieval utilities
+
+~~[./images/attic-lite.png]
+
+	To support uploading, downloading, and deleting files on the network, without the need for Java, we have developed
+	<<Attic-lite>>, which uses the <<curl>> program to perform these operations and utilises a special Attic network
+	agent that interprets the commands and acts as a bridge node.  This facilitates the integration of Attic file sharing
+	with legacy networks, especially the Attic parent project, Enabling Desktop Grids for e-Science (http://www.edges-grid.eu) 
+

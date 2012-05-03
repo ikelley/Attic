@@ -1,0 +1,57 @@
+<!--
+
+-->
+
+
+<project name="attic-all" default="attic-all" basedir=".">
+
+    <property name="version" value="2.0"/>
+    <property name="attic-classes" value="../target/classes"/>
+
+
+    <target name="attic-all">
+        <delete dir="target"/>
+        <mkdir dir="target"/>
+        <mkdir dir="classes"/>
+        <unzip dest="classes">
+            <fileset dir="lib">
+                <exclude name="**/bcprov*.jar"/>
+            </fileset>
+        </unzip>
+        <copy todir="classes" overwrite="yes">
+            <fileset dir="${attic-classes}" includes="**/**.*"/>
+        </copy>
+        <delete includeemptydirs="true">
+            <fileset dir="classes" includes="META-INF/**,certs/**"/>
+        </delete>
+        <jar jarfile="target/attic-all-${version}.jar" basedir="classes" manifest="MANIFEST.MF"/>
+        <delete dir="classes"/>
+        <delete dir="lib"/>
+    </target>
+
+
+    <target name="mvn-install">
+        <exec executable="mvn">
+            <arg value="-e"/>
+            <arg value="install:install-file"/>
+            <arg value="-Dfile=target/attic-all-${version}.jar"/>
+            <arg value="-DpomFile=pom.xml"/>
+            <arg value="-Dversion=${version}"/>
+            <arg value="-Dpackaging=jar"/>
+        </exec>
+    </target>
+
+    <target name="mvn-deploy">
+        <exec executable="mvn">
+            <arg value="-e"/>
+            <arg value="deploy:deploy-file"/>
+            <arg value="-Dfile=target/attic-all-${version}.jar"/>
+            <arg value="-DpomFile=pom.xml"/>
+            <arg value="-Dversion=${version}"/>
+            <arg value="-Durl=scp://lapis.cs.cf.ac.uk/nfs/mntI3/static/triana/html/maven"/>
+            <arg value="-DrepositoryId=trianacode-maven-repos"/>
+            <arg value="-Dpackaging=jar"/>
+        </exec>
+    </target>
+
+</project>

@@ -1,0 +1,23 @@
+									---------
+								    Attic File System
+									---------
+								       Ian Kelley
+									---------
+								      3 February 2012
+
+Client Application
+
+	You can download the client as a self-containing jar file.  Simply download and then
+	run using the command <<java -jar attic-version.jar URL>>.  
+
+Data Caching Application
+
+Data Lookup Service
+
+BOINC Server Plugin
+
+	The source code is currently under heavy development and is available in SVN.
+
+Light-weight publication and retrieval utilities
+
+

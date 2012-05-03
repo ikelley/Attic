@@ -1,0 +1,222 @@
+#!/bin/bash
+
+
+#
+# undeploys a file to an Attic seed node using HTTP(S) with mutual authentication
+# This expects an attic URL, i.e. the output to the attic-deploy script to delete the same file.
+# This script requires curl 7.x.x to be available from the $PATH
+#
+# usage:
+# script [options] <attic-endpoint> <remote-endpoint>
+
+# options:
+# -c : uploader's certificate (in PEM format) - optional but may be required by server
+# -k : uploader's private key (in PEM format) - optional but may be required by server
+# -s : remote seed's CA certificate (in PEM format) - optional but may be required by server
+# -i : interactive - optional. If this is set, the script will ask for confirmation from the user on the passed in arguments
+# -v : verbose - optional. If set, status messages will be displayed
+# -h : prints help
+#
+# any arguments with spaces must be enclosed in double quotes.
+# All output from the script in interactive and verbose mode is sent to stderr apart from a successful result
+# which is the attic URL. This is sent to stdout.
+# This means the script can be piped or redirected.
+
+
+# location header returned from server after posting data description and then after posting data.
+# Initially this gives us where to post the File to. After File upload, this gives us the attic:// address
+loc=""
+# status code from response to uploading data description - should be in the 200 range
+status=""
+
+host=
+endpoint=
+cert=
+key=
+cacert=
+interactive="false"
+verbose="false"
+curlOut=
+
+vEcho() {
+	if [ $verbose = "true" ]; then
+		echo >&2 $1
+	fi
+}
+
+eEcho() {
+	echo >&2 $1
+}
+
+usage() {
+	eEcho "$0 [options] attic-endpoint URL"
+	eEcho "options:"
+	eEcho "     [-c local certificate] your certificate (in PEM format)"
+	eEcho "     [-k private key] your private key (in PEM format)"
+	eEcho "     [-s server host certificate] the host's certificate (in PEM format)"
+	eEcho "     [-i interactive mode] You will be asked if what you entered was correct"
+	eEcho "     [-v verbose mode] Prints out status messages."
+	eEcho "     [-h help] Prints this message."
+}
+
+printStatus () {
+	case "$1" in
+		"200") vEcho "The server says all looks good"
+			return 0;;
+		"201") vEcho "The server has created the resource"
+			return 0;;
+		"202") vEcho "The server has accepted the request"
+			return 0;;
+		"400") eEcho "The server reported a client error. Please review your options."
+			return 1;;
+		"401") eEcho "The server says you are unauthorized. Please review your certificates and key."
+			return 1;;
+		"403") eEcho "The server says you are forbidden access. Please review your certificates and key."
+			return 1;;
+		"404") eEcho "The server says it cannot find the resource. Please review your host path."
+			return 1;;
+		"500") eEcho "The server has reported a server error. Please contact the administrator of the remote host."
+			return 1;;
+		[?]) eEcho "The server responded with the the following status code: $1. This status code is considered to represent an unknown failure."
+			return 1;;
+	esac
+}
+
+toLower() {
+	echo $1 | tr "[:upper:]" "[:lower:]"
+}
+
+while getopts c:k:s:ivh opt; do
+    case "$opt" in
+		c) cert="$OPTARG";;
+		k) key="$OPTARG";;
+		s) cacert="$OPTARG";;
+		i) interactive="true";;
+		v) verbose="true";;
+		h) usage; exit 0;;
+        [?]) usage
+            exit 1;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+
+if [ "$1" ]; then
+	endpoint=$1
+fi
+
+if [ "$2" ]; then
+	host=$2
+fi
+
+if [ "$endpoint" = "" ]; then
+	eEcho "no attic endpoint provided. Please supply an attic enpoint as an argument.";
+	usage;
+	exit 1;
+fi
+
+if [ "$host" = "" ]; then
+	eEcho "no URL provided. Please supply the remote host as an argument.";
+	usage;
+	exit 1;
+fi
+
+hostLen=$(echo ${#host});
+if [ $hostLen -lt 10 ]; then
+	eEcho "The host you provided does not look long enough. Please use a valid host name."
+	exit 1;
+fi
+
+lower=`toLower $host`
+isSecure="false"
+
+if [ "${lower:0:5}" = "https" ]; then
+	isSecure="true"
+fi
+
+if [ "$cert" = "" ] && [ $isSecure = "true" ]; then
+	eEcho "The host is a secured endpoint but no local certificate in PEM format provided. Please use the -c option";
+	usage;
+	exit 1;
+fi
+if [ "$key" = "" ] && [ $isSecure = "true" ]; then
+	eEcho "The host is a secured endpoint but no local private key in PEM format provided. Please use the -k option";
+	usage;
+	exit 1;
+fi
+if [ "$cacert" = "" ] && [ $isSecure = "true" ]; then
+	eEcho "The host is a secured endpoint but no server CA certificate in PEM format provided. Please use the -s option";
+	usage;
+	exit 1;
+fi
+
+
+
+if [ $interactive = "true" ]; then
+	eEcho
+	eEcho "You gave the following parameters:"
+	eEcho
+	eEcho "Attic endpoint        : $endpoint"
+	eEcho "Remote endpoint       : $host"
+	eEcho "Your certificate      : $cert"
+	eEcho "Your private key      : $key"
+	eEcho "Host CA certificate   : $cacert"
+	eEcho
+
+	echo -n >&2 "Is this OK? [n/y] "
+	read answer
+	if [ "$answer" != "y" ]; then
+		eEcho
+		eEcho "Quitting..."
+		exit 0;
+	fi
+	eEcho
+fi
+
+id=${endpoint#*pointer/};
+host=${host%%/}
+host=`echo $host/$id`
+
+# send the request to the seed
+#=========================SEND===========================#
+if [ $isSecure = "false" ]; then
+	curlOut=$( curl -k -H Connection:Close -D headers.txt -X DELETE $host 2>&1 )
+else
+	curlOut=$( curl -k --cert "$cert" --cert-type PEM --cacert "$cacert" --key "$key" -H Connection:Close -D headers.txt -X DELETE $host 2>&1 )
+fi
+upload=$?
+#========================================================#
+if [ $upload -ne 0 ]; then
+	eEcho "There was an error send the request:"
+	echo >&2 $curlOut
+	exit 1;
+fi
+
+if [ ! -f headers.txt ]; then
+	eEcho "HTTP headers were not captured. Cannot continue..."
+	exit 1;
+fi
+
+exec < headers.txt
+while read LINE
+do
+	if [ "${LINE:0:8}" = "HTTP/1.1" ]; then
+		status=${LINE#*HTTP/1.1};
+		status=${status#* };
+		status=${status%% *};
+	fi
+done
+
+printStatus $status
+good=$?
+if [ "$good" = 1 ]; then
+	exit 1;
+fi
+
+rm -rf headers.txt
+
+echo "Data succesfully deleted"
+
+
+
+

@@ -1,0 +1,226 @@
+body address {
+    line-height: 1.3;
+    margin: .6em 0;
+}
+
+body blockquote {
+    margin-top: .75em;
+    line-height: 1.5;
+    margin-bottom: .75em;
+}
+
+html body {
+    margin: 1em 8% 1em 10%;
+    line-height: 1.2;
+    font-family: Verdana, arial, helvetica, sans-serif;
+    font-size: 0.9em;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:link {
+    color: #0033ff;
+}
+
+a:visited {
+    color: #990099;
+}
+
+a:active, a:hover {
+    color: #cc00cc;
+}
+
+.code {
+    font-size: 1.2em;
+    color: #330099;
+}
+
+.legalnotice {
+    font-size: small;
+    font-variant: small-caps;
+}
+
+body div {
+    margin: 0;
+}
+
+dl {
+    margin: .8em 0;
+    line-height: 1.2;
+}
+
+body form {
+    margin: .6em 0;
+}
+
+h1, h2,
+    div.example p b,
+    .question,
+    div.table p b,
+    div.procedure p b,
+    .title {
+    color: #330099;
+}
+
+body h1, body h2, body h3, body h4, body h5, body h6 {
+    line-height: 1.3;
+}
+
+body hr {
+    margin: .6em;
+    border: 0 solid #cecece;
+    border-bottom-width: 1px;
+
+}
+
+ol {
+    margin: 0 0 0 5%;
+    line-height: 1.2;
+}
+
+body pre {
+    margin: .75em 0;
+    line-height: 1.0;
+    font-family: monospace;
+}
+
+body td, body th {
+    line-height: 1.2;
+}
+
+ul, body dir, body menu {
+
+    line-height: 1.2;
+}
+
+.informaltable {
+    padding: 1ex;
+    border: 1px solid #ccc;
+
+}
+
+.informaltable tbody {
+    font-style: italic;
+}
+
+.informaltable td {
+    padding: 5px;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    color: #000000;
+}
+
+.filename {
+    background-color: #cfcfcf;
+    color: #003399;
+}
+
+.guimenu, .guimenuitem, .guisubmenu,
+    .guilabel, .interface,
+    .shortcut, .shortcut .keycap {
+    font-weight: bold;
+}
+
+.guibutton {
+    background-color: #cfcfcf;
+    padding: 2px;
+}
+
+.screen {
+    padding: 1ex;
+}
+
+.programlisting {
+    padding: 1ex;
+    background-color: #eee;
+    border: 1px solid #ccc;
+}
+
+@media screen {
+/* hide from ie3 */
+    a[href]:hover {
+        background: #ffa
+    }
+}
+
+.example {
+    background: #fefde6;
+    border: 1px solid #f1bb16;
+    margin: 1em 0;
+    padding: 0.2em 2em;
+}
+
+div.important {
+    background: #fff0f5 url('images/icons/important.png') no-repeat 10px 10px;
+    border: 1px solid;
+    clear: both;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+div.note {
+    background: #ffffcc url('images/icons/note.png') no-repeat 10px 10px;
+    border: 1px solid;
+    clear: both;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+div.warning {
+    background: #ffe4e1 url('images/icons/warning.png') no-repeat 10px 10px;
+    border: 1px solid;
+    clear: both;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+div.tip {
+    background: #f0ffff url('images/icons/tip.png') no-repeat 10px 10px;
+    border: 1px solid;
+    clear: both;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+div.caution {
+    background: #ffdab9 url('images/icons/caution.png') no-repeat 10px 10px;
+    border: 1px solid;
+    clear: both;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+div.tip h3 {
+    padding-left: 30px;
+}
+
+div.warning h3 {
+    padding-left: 30px;
+}
+
+div.note h3 {
+    padding-left: 30px;
+}
+
+div.caution h3 {
+    padding-left: 30px;
+}
+
+div.important h3 {
+    padding-left: 30px;
+}
+
+.inlinemediaobject img {
+    border: 1px solid #f1bb16;
+    margin: 10px;
+    float: left;
+}
+

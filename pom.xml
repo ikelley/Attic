@@ -1,0 +1,244 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.atticfs</groupId>
+    <artifactId>attic</artifactId>
+    <packaging>pom</packaging>
+    <version>2.0</version>
+    <name>Attic</name>
+    <url>http://www.atticfs.org</url>
+
+ <properties>
+
+    <project.build.sourceEncoding>
+      UTF-8
+    </project.build.sourceEncoding>
+
+    <project.reporting.outputEncoding>
+      UTF-8
+    </project.reporting.outputEncoding>
+
+  </properties>
+
+
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!--    <organization>
+           <name>Cardiff University, School of Computer Science</name>
+           <url>http://www.cs.cf.ac.uk</url>
+        </organization>
+    -->
+    <scm>
+
+        <connection>scm:svn:https://svn.atticfs.org/projects/attic/trunk/</connection>
+        <developerConnection>scm:svn:https://svn.atticfs.org/projects/attic/trunk/</developerConnection>
+        <url>https://svn.atticfs.org/projects/attic/trunk/</url>
+
+    </scm>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+		<version>2.3.2</version>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                    <version>2.3.2</version>
+                </configuration>
+            </plugin>
+            <!--<plugin>
+                   <groupId>org.apache.maven.plugins</groupId>
+                   <artifactId>maven-site-plugin</artifactId>
+		   <version>3.0<version>
+                   <configuration>
+                       <templateFile>${basedir}/maven-template/attic-site.vm</templateFile>
+                   </configuration>
+               </plugin>
+           -->
+        </plugins>
+    </build>
+
+
+    <developers>
+        <developer>
+            <name>Ian Kelley</name>
+            <id>ikelley</id>
+            <url>http://www.kelley.tv</url>
+            <email>i.r.kelley -at- cs.cf.ac.uk</email>
+            <organization>Cardiff University</organization>
+            <organizationUrl>http://www.cs.cf.ac.uk</organizationUrl>
+            <roles>
+                <role>lead architect</role>
+            </roles>
+            <!--<properties>
+               <picUrl>http://tinyurl.com/prv4t</picUrl>
+            </properties>-->
+            <timezone>0</timezone>
+        </developer>
+        <developer>
+            <name>Abdelhamid Elwaer</name>
+            <id>elwaer</id>
+            <url>-</url>
+            <email>a.elwaer -at- cs.cf.ac.uk</email>
+            <organization>Cardiff University</organization>
+            <organizationUrl>http://www.cs.cf.ac.uk</organizationUrl>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <!--<properties>
+               <picUrl>http://tinyurl.com/prv4t</picUrl>
+            </properties>-->
+            <timezone>0</timezone>
+        </developer>
+
+        <developer>
+            <name>Andrew Harrison</name>
+            <id>scmabh</id>
+            <url>-</url>
+            <email>a.b.harrison -at- cs.cf.ac.uk</email>
+            <organization>Cardiff University</organization>
+            <organizationUrl>http://www.cs.cf.ac.uk</organizationUrl>
+            <roles>
+                <role>previous senior developer</role>
+            </roles>
+            <!--<properties>
+               <picUrl>http://tinyurl.com/prv4t</picUrl>
+            </properties>-->
+            <timezone>0</timezone>
+        </developer>
+
+    </developers>
+    <contributors>
+        <contributor>
+            <name>Ian Taylor</name>
+            <email>ian.j.taylor -at- cs.cf.ac.uk</email>
+            <url>http://users.cs.cf.ac.uk/Ian.J.Taylor/</url>
+            <organization>Cardiff University</organization>
+            <organizationUrl>http://www.cs.cf.ac.uk</organizationUrl>
+            <roles>
+                <role>project supervisor</role>
+            </roles>
+            <timezone>0</timezone>
+        </contributor>
+        <contributor>
+            <name>Fernando Costa</name>
+            <email>flcosta -at- dei.uc.pt</email>
+            <organization>Universidade de Coimbra</organization>
+            <organizationUrl>http://www.dei.uc.pt</organizationUrl>
+            <roles>
+                <role>collaborating developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </contributor>
+        <contributor>
+            <name>Przemyslaw Woznowski</name>
+            <email>P.R.Woznowski -at- cs.cardiff.ac.uk</email>
+            <organization>Cardiff University</organization>
+            <organizationUrl>http://www.cs.cf.ac.uk</organizationUrl>
+            <roles>
+                <role>previous developer</role>
+            </roles>
+            <timezone>+0</timezone>
+        </contributor>
+        <contributor>
+            <name>Kieran Evans</name>
+            <email>K.Evans -at- cs.cardiff.ac.uk</email>
+            <organization>Cardiff University</organization>
+            <organizationUrl>http://www.cs.cf.ac.uk</organizationUrl>
+            <roles>
+                <role>previous developer</role>
+            </roles>
+            <timezone>+0</timezone>
+        </contributor>
+    </contributors>
+
+    <reporting>
+        <plugins>
+            <!--<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <configuration>
+                    <templateFile>${basedir}/maven-template/attic-site.vm</templateFile>
+                </configuration>
+            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+		    <show>private</show>
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.0.1</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>dependencies</report>
+                            <report>dependency-convergence</report>
+                            <report>project-team</report>
+                            <report>mailing-list</report>
+                            <report>license</report>
+                            <report>scm</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+        </plugins>
+    </reporting>
+    <mailingLists>
+        <mailingList>
+            <name>General Inquiries</name>
+            <!-- <subscribe>http://forge.nesc.ac.uk/mailman/listinfo/attic-user</subscribe>
+            <unsubscribe>http://forge.nesc.ac.uk/mailman/listinfo/attic-user</unsubscribe>-->
+            <post>info@atticfs.org</post>
+            <!--<archive>http://forge.nesc.ac.uk/pipermail/attic-user/</archive>-->
+        </mailingList>
+        <mailingList>
+            <name>Developers List</name>
+            <!-- <subscribe>http://forge.nesc.ac.uk/mailman/listinfo/attic-user</subscribe>
+            <unsubscribe>http://forge.nesc.ac.uk/mailman/listinfo/attic-user</unsubscribe>-->
+            <post>edges-jra3@mail.edges-grid.eu</post>
+            <!--<archive>http://forge.nesc.ac.uk/pipermail/attic-user/</archive>-->
+        </mailingList>
+    </mailingLists>
+
+    <repositories>
+        <repository>
+            <id>cu-maven-repos</id>
+            <url>http://www.trianacode.org/maven</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>cu-maven-repos</id>
+            <name>Cardiff University Computer Science Maven Repository</name>
+            <url>scp://lapis.cs.cf.ac.uk/nfs/mntI3/static/triana/html/maven</url>
+        </repository>
+        <site>
+            <id>attic</id>
+            <url>scp://voldemort.cs.cf.ac.uk/home/ikelley/websites/www.atticfs.org</url>
+        </site>
+    </distributionManagement>
+
+
+    <modules>
+        <module>core</module>
+        <module>key</module>
+    </modules>
+
+
+</project>

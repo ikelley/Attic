@@ -1,0 +1,99 @@
+                                                                        ---------
+                                                                    Attic File System
+                                                                        ---------
+                                                                       Ian Kelley
+                                                                        ---------
+                                                                      3 February 2012
+									
+Publication List
+
+	Here you will find links to publications related to the project.  For your convenience, we have 
+	divided these up into Attic (previously ADICS)-specific publications, which are targeted at the project's architecture
+	and design, and select supplementary material by the project team that is related to Attic.
+
+* Attic (ADICS)-specific publications
+
+
+	* Ian Kelley and Ian Taylor. <<A Peer-to-Peer Architecture for Data-Intensive Cycle Sharing.>> The Network-Aware Data Management Workshop held in conjunction with the IEEE/ACM International Conference for High Performance Computing, Networking, Storage and Analysis (SC'11). 2011.
+
+		* {{{http://dl.acm.org/citation.cfm?id=2110227&dl=ACM&coll=DL&CFID=83024433&CFTOKEN=51644777}Link}}
+
+	* Abdelhamid Elwaer, Andrew Harrison, Ian Kelley, and Ian Taylor. <<Attic: A Case Study for Distributing Data in BOINC Projects.>> Cardiff University, United Kingdom. 5th Workshop on Desktop Grids and Volunteer Computing Systems (PCGrid 2011). 2011.
+
+		* {{{http://ieeexplore.ieee.org/xpl/freeabs_all.jsp?arnumber=6009057}Link}}
+
+
+	* Ian Kelley and Ian Taylor. <<Bridging the Data Management Gap Between
+        Service and Desktop Grids.>> In: Distributed and Parallel Systems
+        In Focus: Desktop Grid Computing, Peter Kacsuk, Robert Lovas and Zsolt
+        Nemeth (Editors), Springer, 2008.
+
+		* {{{./publications/adics-dapsys2008.pdf}PDF}}
+
+	* Daniela Barbalace, Ian Kelley, Carlo Mastroianni, Domenico Talia, Ian
+        Taylor. <<A data sharing protocol for Desktop Grid projects.>> CoreGRID
+        Report TR-0165, July 21, 2008 
+
+		* {{{http://www.coregrid.net/mambo/images/stories/TechnicalReports/tr-0165.pdf}PDF}}
+
+* Supplimentary material 
+
+	* Tamas Kiss, Ian Kelley, and Peter Kacsuk. <<Porting computation and data intensive applications to distributed computing infrastructures incorporating desktop grids.>> In The International Symposium on Grids and Clouds and the Open Grid Forum, PoS(ISGC 2011 & OGF 31)060, 2011.
+
+		* {{{http://pos.sissa.it/archive/conferences/133/060/ISGC%202011%20&%20OGF%2031_060.pdf}PDF}}
+
+	* Elwaer, A., Taylor, I., & Rana, O. (2011, January 7). <<Optimizing Data Distribution in Volunteer Computing Systems using Resources of Participants.>> Scalable Computing: Practice and Experience. 
+
+		* {{{http://www.scpe.org/index.php/scpe/article/view/714}Link}}
+
+	* Elwaer, A., Taylor, I., & Rana, O. (2011). <<Preference Driven Server Selection in Peer-to-Peer Data Sharing Systems.>> The Fourth International Workshop on Data Intensive Distributed Computing (DIDC 2011). San Jose, California: 20th International Symposium on High Performance Distributed Computing (HPDC 2011). 
+
+		* {{{http://www.cse.buffalo.edu/faculty/tkosar/dadc08/program.php}Link}}
+
+
+	* Pasquale Cozza, Ian Kelley, Carlo Mastroianni, Domenico Talia, and Ian
+        Taylor. <<Cache-Enabled Super-Peer Overlays for Multiple Job Submission
+        on Grids.>> In: Grid Middleware and Services: Challenges and Solutions.
+        Springer, Domenico Talia, Ramin Yahyapour, and Wolfgang Ziegler
+        (Editors), Springer, 2008.
+
+		* {{{http://www.springerlink.com/content/j6226u476x7q0255/}Link}}
+
+
+	* Carlo Mastroianni, Pasquale Cozza, Domenico Talia, Ian Kelley, and Ian
+        Taylor. <<A Scalable Super-Peer Approach for Public Scientific
+        Computation.>> Future Generation Computer Systems, August, 2008.
+
+		* {{{http://grid.deis.unical.it/papers/pdf/ScalableSuperpeer.pdf}PDF}}
+
+	* Fernando Costa, Luis Silva, Ian Kelley, Ian Taylor. <<P2P Techniques for
+        Data Distribution in Desktop Grid Computing Platforms.>> In: Making Grids
+        Work, Marco Danelutto, Paraskevi Fragopoulou and Vladimir Getov
+        (Editors), Springer, 2008.
+
+		* {{{http://www.springer.com/computer/communications/book/978-0-387-78447-2}Link}}
+
+
+	* Fernando Costa, Luis Silva, Gilles Fedak, and Ian Kelley.. <<Optimizing
+        the Data Distribution Layer of BOINC with BitTorrent.>> Second Workshop
+        on Desktop Grids and Volunteer Computing Systems (PCGrid 2008) held in
+        conjunction with the IEEE International Parallel & Distributed
+        Processing Symposium (IPDPS), April 18, 2008, Miami, Florida, U.S.A.
+		
+		* {{{http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=4536446}Link}}
+
+	* Fernando Costa, Luis Silva, Gilles Fedak, and Ian Kelley. <<Optimizing
+        Data Distribution in Desktop Grid Platforms.>> In: Parallel Processing
+        Letters (PPL), Special Issue on Grid Architectural Issues: Scalability,
+        Dependability, Adaptability. Volume: 18, Issue: 3. September, 2008.
+
+		* {{{http://www.worldscinet.com/cgi-bin/details.cgi?id=pii:S0129626408003466&type=html}Link}}
+
+	* Z. Balaton, Z. Farkas, G. Gombas, P. Kacsuk, R. Lovas, A. C. Marosi, A.
+        Emmen, G. Terstyanszky, T. Kiss, I. Kelley, I. Taylor, O. Lodygensky, M.
+        Cardenas-Montes, G. Fedak, and F. Araujo, <<EDGeS: The common boundary
+        between service and desktop grids.>> Parallel Processing Letters (PPL),
+        Special Issue on Grid Architectural Issues: Scalability, Dependability,
+        Adaptability. Volume: 18, Issue: 3. September, 2008. 
+
+		* {{{http://hal.inria.fr/in2p3-00453417}Link}}

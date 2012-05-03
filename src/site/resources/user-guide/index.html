@@ -1,0 +1,1829 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>Attic User and Developer Guide</title>
+    <link rel="stylesheet" href="docbook.css" type="text/css">
+    <meta name="generator" content="DocBook XSL Stylesheets V1.75.1">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<div class="article" title="Attic User and Developer Guide">
+<div class="titlepage">
+    <div>
+        <div><h2 class="title"><a name="d4e1"></a>Attic User and Developer Guide</h2></div>
+    </div>
+    <hr>
+</div>
+<div class="toc"><p><b>Table of Contents</b></p>
+    <dl>
+        <dt><span class="sect1"><a href="#d4e3">Introduction</a></span></dt>
+        <dd>
+            <dl>
+                <dt><span class="sect2"><a href="#d4e13">Useful Links</a></span></dt>
+            </dl>
+        </dd>
+        <dt><span class="sect1"><a href="#sect-message">Message Handling Components</a></span></dt>
+        <dd>
+            <dl>
+                <dt><span class="sect2"><a href="#d4e162">Registering Roles with an Attic Instance</a></span></dt>
+            </dl>
+        </dd>
+        <dt><span class="sect1"><a href="#sect-message-types">Message Types</a></span></dt>
+        <dt><span class="sect1"><a href="#sect-roles">Role Implementations</a></span></dt>
+        <dt><span class="sect1"><a href="#sect-download">Downloading</a></span></dt>
+        <dt><span class="sect1"><a href="#sect-config">Configuration</a></span></dt>
+        <dt><span class="sect1"><a href="#sect-security">Security</a></span></dt>
+        <dt><span class="sect1"><a href="#sect-persist">Persistence</a></span></dt>
+        <dt><span class="sect1"><a href="#sect-examples">Examples</a></span></dt>
+    </dl>
+</div>
+
+
+<div class="sect1" title="Introduction">
+    <div class="titlepage">
+        <div>
+            <div><h2 class="title" style="clear: both"><a name="d4e3"></a>Introduction</h2></div>
+        </div>
+    </div>
+
+
+    <p>This document provides an overview of Attic. It is primarily intended for users
+        as well as developers who want to extend the functionality of the code. Attic is
+        developed for the EU <a class="link" href="http://www.edges-grid.eu/" target="_blank">EDGeS
+        </a> project. It implements the architecture defined by Peer-to-Peer Architecture for
+        Data-Intensive Cycle Sharing (ADICS). An understanding of the background to
+        ADICS, its overall architecture and context is presumed. For high-level documents
+        about ADICS and other supporting information, please refer to <a class="link" href="http://www.atticfs.org" target="_blank">
+            http://www.atticfs.org</a>. </p>
+
+    <p>The description of the code in this document describes Attic <span class="emphasis"><em>as it
+        stands at the time of writing </em></span> (June 2009). The code is still in a pre
+        version 1.0 state. Furthermore, The code base is relatively small, making refactoring
+        that affects the API tempting to those who feel it is needed. </p>
+
+    <p>The aim of Attic is to be very lightweight, easy to configure and easy to run.
+        With this in mind, the core code has no third party dependencies, supports Web
+        configuration and contains a number of classes in the test directory with examples of
+        how to run the different roles involved in an ADICS network. </p>
+
+    <p>Although ADICS is not strictly tied to HTTP, Attic uses HTTP exclusively,
+        both for control messages and for data transfer. Attic is not tied to a particular
+        HTTP implementation. The current implementation uses HttPeer, another Cardiff project.
+        HttPeer is a very lightweight library that allows easy server- and client-side HTTP data
+        transfers. The <a class="link" href="http://www.restlet.org/" target="_blank">Restlet</a>
+        framework would also make a suitable HTTP back end to the code, although it is a larger
+        code base, and some of the optimizations and security features could be harder to
+        implement (being a third party library). </p>
+
+    <div class="sect2" title="Useful Links">
+        <div class="titlepage">
+            <div>
+                <div><h3 class="title"><a name="d4e13"></a>Useful Links</h3></div>
+            </div>
+        </div>
+
+        <div class="itemizedlist">
+            <ul class="itemizedlist" type="disc">
+                <li class="listitem">
+                    <p>The code is available from <a class="link" href="https://svn.cs.cf.ac.uk/projects/attic/trunk/" target="_blank">https://svn.cs.cf.ac.uk/projects/attic/trunk/</a>
+                        and can be
+                        downloaded using a Subversion client. The build uses Apache's<a class="link" href="http://maven.apache.org/" target="_blank">Maven</a>.
+                        The core
+                        code has a number of first-party dependencies. During the maven build, in
+                        particular the <code class="code">package</code> goal, a JAR file containing these
+                        dependencies is generated in the <code class="code">all/</code> directory of the
+                        <code class="code">core</code> module. This JAR file
+                        (<span class="emphasis"><em>attic-all-&lt;version&gt;.jar</em></span>) contains
+                        all the code needed to run core Attic without any other dependencies.
+                    </p>
+                </li>
+                <li class="listitem">
+                    <p>Binary versions are available from<a class="link" href="http://www.trianacode.org/maven/org/atticfs/" target="_top">
+                        http://www.trianacode.org/maven/org/atticfs/</a>. The binaries are
+                        laid out according to the maven repository format, so the link above points
+                        to the main directory. Versions are available under the version directories
+                        (e.g., 0.1/, 0.2/ etc.), as well as maven artefact metadata and checksums of
+                        the jars. The Attic-core binary contains just the core Attic
+                        code without the dependencies on other Cardiff projects. The Attic-all
+                        binary includes the dependencies and is therefore ready to run as is.
+                    </p>
+                </li>
+            </ul>
+        </div>
+
+
+    </div>
+</div>
+<div class="sect1" title="Message Handling Components">
+    <div class="titlepage">
+        <div>
+            <div><h2 class="title" style="clear: both"><a name="sect-message"></a>Message Handling Components</h2></div>
+        </div>
+    </div>
+
+
+    <p>Attic is insulated from the HTTP implementation via a set of interfaces for
+        sending and receiving data and control messages. These are based on the concept of
+        <code class="code">InChannels</code> and<code class="code">OutChannels</code>, and components that receive
+        messages and data from <code class="code">InChannels</code> and send data and messages to
+        <code class="code">OutChannels</code>. Figure <a class="xref" href="#fig-channel" title="Figure&nbsp;1.&nbsp;Channel Interfaces">Channel
+            Interfaces</a> shows the classes
+        involved in the channel interfaces. </p>
+
+    <div class="figure"><a name="fig-channel"></a>
+
+        <p class="title"><b>Figure&nbsp;1.&nbsp;Channel Interfaces</b></p>
+
+        <div class="figure-contents">
+
+            <div class="mediaobject" align="center"><img src="images/channel.png" align="middle" alt="Channel Interfaces"></div>
+        </div>
+    </div>
+    <p><br class="figure-break"> A <code class="code">ChannelFactory</code> is used to create in and out channels. an
+        <code class="code">InChannel</code> takes a <code class="code">ChannelRequestHandler</code> as an argument
+        during creation. Request handlers receive messages along with metadata about the message
+        when something arrives at the<code class="code">InChannel</code>. Specifically, the handler receives
+        a <code class="code">ChannelData</code> object (not shown below for brevity). A
+        <code class="code">ChannelData</code> object is a Java bean containing a number getters and
+        setter such as the request endpoint, the request data object, the response data object,
+        the <code class="code">Action</code> of the request (one of the HTTP methods) and an
+        <code class="code">Outcome</code>, mapped to the HTTP response status code.
+        <code class="code">ChannelData</code> is used at both the server-side, by a
+        <code class="code">ChannelRequestHandler</code> as well as at the client-side. On the client-side
+        the application asks a factory to create an<code class="code">OutChannel</code>, creates using the
+        desired endpoint, puts some data in it and calls the channel's
+        <code class="code">send(ChannelData)</code> method. This returns synchronously containing
+        (possibly the same) <code class="code">ChannelData</code> object with outcome and response data in
+        it. </p>
+
+    <p>Being based on HTTP, the design follows a typical HTTP architecture in which different
+        handlers are mapped to different URL paths (note the <code class="code">getPath()</code> method of
+        the <code class="code">ChannelRequestHandler</code> interface. Apart from this, a handler handles a
+        request using the <code class="code">handleRequest(ChannelData)</code> method. </p>
+
+
+    <p>Extending the <code class="code">ChannelRequestHandler</code> is the
+        <code class="code">AbstractRequestHandler</code> class. This provides some functionality for
+        handler implementations, in particular breaking the request into HTTP method actions.
+        Hence subclasses of this abstract class do not have to work out what the request type
+        is. Instead, they can process messages directly, much in the way that an extension of
+        abstract <code class="code">HttpServlet</code> can, in a Servlet framework. </p>
+
+    <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
+
+        <p>
+            <code class="code">ChannelData</code> has an action called <code class="varname">CREATE</code> and an
+            action called<code class="varname">MESSAGE</code>. Likewise, the
+            <code class="code">AbstractRequestHandler</code> has a <code class="code">handleMessage</code> and a
+            <code class="code">handleCreate</code> method. Both these actions and methods map to an HTTP
+            POST method. The semantics of an HTTP POST are sometimes application dependent,
+            specifically if the application is tunneling data via an HTTP envelope as SOAP
+            typically does. Currently the code does not distinguish between the two. Every POST
+            is passed as a <code class="varname">CREATE</code> action. This could change. </p>
+    </div>
+    <p>The existing extensions the <code class="code">AbstractRequestHandler</code> are shown in Figure
+        <a class="xref" href="#fig-handlers" title="Figure&nbsp;2.&nbsp;Handlers">Handlers</a>. Their roles are enumerated below: </p>
+
+    <div class="itemizedlist">
+        <ul class="itemizedlist" type="disc">
+            <li class="listitem">
+                <p>
+                    <code class="code">ConfigRequestHandler</code> handles requests for managing the Web
+                    configuration. It responds to the GET method by returning the Web form, and
+                    responds to POSTs from the Web form. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">DescriptionRequestHandler</code> handles requests for metadata,
+                    specifically <code class="code">DataDescriptions</code> and <code class="code">FileHashes</code> (more
+                    on these later). </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">DataRequestHandler</code> handles requests for data. It deals only
+                    with GET methods at the moment. There is the possibility that it could
+                    handle queries in the for of an HTTP POST. This would allow clients to
+                    specify bandwidth constraints on data delivery by the server. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">PointerReqestHandler</code> handles requests dealing with
+                    <code class="code">DataPointers</code>, <code class="code">DataAdverts</code> and
+                    <code class="code">DataQueries</code>. There is a fair amount of decision making to
+                    be done with these types, so this handler delegates most of the logic to an
+                    <code class="code">AdvertProcessor</code> (see below). </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">SeedRequestHandler</code> handles receiving requests to publish data.
+                    Typically a data publisher will act as a seed itself, but this is not always
+                    the case. A publisher may push data to a node prepared to receive both a
+                    <code class="code">DataAdvert</code> and the associated data. The seed then becomes
+                    the publisher itself, passing the <code class="code">DataAdvert</code> to the network and
+                    storing the data locally. </p>
+            </li>
+        </ul>
+    </div>
+    <p>
+    </p>
+
+    <p>You will notice from the class diagram that some handlers implement the
+        <code class="code">Authenticating</code> interface. This interface is used to specify a request
+        action that is being performed by the client, based on the request path. These actions
+        are mapped to identities, specifically the Distinguished Name of the client's X509
+        certificate. The security implementation is discussed in more detail in the <a class="link" href="#sect-security"
+                                                                                       title="Security">security </a> section. Actions include things
+        like
+        <code class="varname">PUBLISH</code> and<code class="varname">CACHE</code>. </p>
+
+    <p>
+    </p>
+
+    <div class="figure"><a name="fig-handlers"></a>
+
+        <p class="title"><b>Figure&nbsp;2.&nbsp;Handlers</b></p>
+
+        <div class="figure-contents">
+
+            <div class="mediaobject" align="center"><img src="images/handlers.png" align="middle" alt="Handlers"></div>
+        </div>
+    </div>
+    <p><br class="figure-break">
+    </p>
+
+    <p>The other core interface alongside <code class="code">ChannelRequestHandler</code> is the
+        <code class="code">Role</code> interface. The classes related to this interface are shown in
+        Figure<a class="xref" href="#fig-roles" title="Figure&nbsp;3.&nbsp;Roles">Roles</a>. A <code class="code">Role</code> has a reference to an
+        instance of an <code class="code">Attic</code> object. This is the central point of entry for
+        an application, providing the glue between configuration options and different
+        <code class="code">Roles</code>. A <code class="code">Role</code> is initialized with an instance of
+        <code class="code">Attic</code>. It does not expose any service capabilities, although
+        strictly speaking, it could. The basic implementation of a Worker node implements the
+        <code class="code">Role</code> interface. The worker does not require any running servers. It
+        merely makes client requests. </p>
+
+    <p>Extending the <code class="code">Role</code> interface is the <code class="code">ServiceRole</code> interface.
+        This is designed for nodes that provide a service to the network. As well as extending
+        <code class="code">Role</code>, it also extends<code class="code">ChannelRequestHandler</code>. Therefore it
+        binds an instance of <code class="code">Attic</code> with the server-side message receiving
+        interfaces. A <code class="code">ServiceRole</code> is designed to create a channel and register as a
+        handler with it, but to delegate the processing to other handlers based on the request
+        path and the path of its registered handlers. You will notice the
+        <code class="code">addChannelRequestHandler</code> method, which allows a service to add
+        arbitrary handlers to its own path to provide capabilities. </p>
+
+    <p>The <code class="code">AbstractServiceRole</code> provides some core methods for services to
+        extend. In particular, it knows how to work out which registered
+        <code class="code">ChannelRequestHandler</code> should be invoked, based on the request path of
+        the<code class="code">ChannelData</code>, as well as checking that the authentication key of the
+        handler, if it returns one based on the request path, is compatible with the identity
+        that is making the request. This allows subclasses to know that, if the request gets as
+        far as them, then the requesting agent has been authorized and authenticated. Note the
+        <code class="code">addIndentity</code> and <code class="code">removeIdentity</code> methods defined by
+        <code class="code">ServiceRole</code>. More on these in the <a class="link" href="#sect-security" title="Security">security </a> section. </p>
+
+    <p>The <code class="code">ServiceRole</code> also exposes two methods for determining the endpoint
+        (URL) of itself and the handlers it has registered. </p>
+
+    <p>There are two further interfaces currently defined that extend
+        <code class="code">ServiceRole</code>: </p>
+
+    <p>
+    </p>
+
+    <div class="figure"><a name="fig-roles"></a>
+
+        <p class="title"><b>Figure&nbsp;3.&nbsp;Roles</b></p>
+
+        <div class="figure-contents">
+
+            <div class="mediaobject" align="center"><img src="images/roles.png" align="middle" alt="Roles"></div>
+        </div>
+    </div>
+    <p><br class="figure-break">
+
+    </p>
+
+    <p>Two further extensions to the <code class="code">ServiceRole</code> interface are currently
+        defined. The <code class="code">Publisher</code> interface is implemented by roles that initiate data
+        onto the network. The <code class="code">index(DataDescription, File)</code> takes metadata, and maps
+        this to a file, producing hashed chunk descriptions in the process, and potentially
+        storing the metadata. A publisher typically creates an authoritative metadata
+        description which is registered with the network and downloaded by caching and worker
+        nodes. Registration happens via the <code class="code">publish(DataAdvert)</code> method. The
+        <code class="code">createEndpoint(DataAdvert)</code> generates an endpoint that can be inserted
+        into the<code class="code">DataAdvert</code>. Different publishers may have different policies and
+        ways of generating endpoints that appear in adverts. The
+        <code class="code">getEndpoint(DataPointer)</code> method returns where on the network a
+        <code class="code">DataPointer</code> can be found. Typically, the publisher discovers this
+        during the process of publishing. </p>
+
+    <p>The <code class="code">AdvertProcessor</code> interface is implemented by nodes that receive
+        <code class="code">DataAdverts</code> and <code class="code">DataQueries</code> during their message
+        processing. Typically, this is a role taken on by a Data Lookup Service. The two methods
+        receive and advert or query, and the <code class="code">ChannelData</code> used for the request. It
+        is the responsibility of the <code class="code">AdvertProcessor</code> to manipulate the
+        <code class="code">ChannelData</code> and set the response data and outcome of it. </p>
+
+    <p>Please see the <a class="link" href="#sect-message-types" title="Message Types">Message Types</a> section for
+        more details on how the various data structures are used. </p>
+
+    <div class="sect2" title="Registering Roles with an Attic Instance">
+        <div class="titlepage">
+            <div>
+                <div><h3 class="title"><a name="d4e162"></a>Registering Roles with an Attic Instance</h3></div>
+            </div>
+        </div>
+
+        <p>The <code class="code">Role</code> interface exposes methods that attach it to an instance of
+            an<code class="code">Attic</code>. The <code class="code">init(Attic)</code> is called to pass
+            an instance of <code class="code">Attic</code> to the role, providing it with a central
+            point to retrieve configuration information, and allow the role to launch any
+            components it needs to in order to fulfill its tasks. Similarly, the
+            <code class="code">shutdown</code> method is used to close down any components and clean up.
+            While these methods can be called directly on <code class="code">Role</code> implementations,
+            this is not recomended, in particular because the Attic instance itself needs
+            initializing at some point. Instead, client code should create an instance of
+            <code class="code">Attic</code> and call the <code class="code">attach</code> method on it, passing
+            in the role, and a string identifying it. Then, by calling the <code class="code">init</code>
+            method on the <code class="code">Attic</code> instance, the role's <code class="code">init</code> method
+            will be called within that, at the correct time of initialization. The same goes for
+            the <code class="code">shutdown</code> method of<code class="code">Attic</code>. See Section <a class="link" href="#sect-examples"
+                                                                                                            title="Examples">Examples </a> for
+            examples on creating roles.
+        </p>
+    </div>
+</div>
+
+<div class="sect1" title="Message Types">
+    <div class="titlepage">
+        <div>
+            <div><h2 class="title" style="clear: both"><a name="sect-message-types"></a>Message Types</h2></div>
+        </div>
+    </div>
+
+    <p>There a number of message types used to allow describing, publishing, and querying
+        data. These are simple Java bean types. They are currently serialized to wire as
+        Javascript Object Notation (<a class="link" href="http://www.json.org/" target="_blank">JSON</a>) by default. XML and XHTML is also supported.
+        JSON messages are between 1/3 and
+        1/2 smaller than XML. That's the reason for using JSON. XHTML is not recommended for
+        machine to machine communication because it is quite verbose. But it will be returned by default
+        to a request that specifies and Accept HTTP header with text/html as a preferred response type.
+        This is typical of browsers.</p>
+
+    <p>
+    </p>
+
+    <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
+
+        <p>The current implementation supports XML, XHTML and JSON within the same network. In
+            other words one node may generate JSON messages and another may generate XML
+            messages, and they can still communicate. But changing the serialization of
+            message types on the same node will disrupt the storage of description files on
+            disk (if the default disk storage of metadata is being used) because these a serialized to disk using the current serialization
+            mechanism. Therefore, if this changes, then the stored descriptions will not be
+            understood. This bug will be resolved shortly.</p>
+    </div>
+    <p> The different message types and their usage is described below. </p>
+
+    <div class="variablelist">
+        <dl>
+            <dt><span class="term">DataDescription</span></dt>
+            <dd>
+                <p>This type defines metadata about some data, for example a name,
+                    description, project associated with the data. It also contains an
+                    identifier. This must be a globally unique id. This may actually change,
+                    if Attic adopts a hierarchical file system. A description also
+                    contains a <code class="code">FileHash</code>
+                </p>
+
+                <div class="variablelist">
+                    <dl>
+                        <dt><span class="term">FileHash</span></dt>
+                        <dd>
+                            <p>This type defines metadata about some data at the byte
+                                level. Specifically it contains the length of the data and
+                                an MD5 hash of the bytes. It may also contain a list
+                                <code class="code">FileSegmentHash</code> objects. </p>
+
+                            <div class="variablelist">
+                                <dl>
+                                    <dt><span class="term">FileSegmentHash</span></dt>
+                                    <dd>
+                                        <p>This describes a portion of data including the
+                                            start offset and end offset in bytes as well as an
+                                            MD5 hash of the portion. A segment is created by a
+                                            minter of a <code class="code">DataDescription</code> who
+                                            decides how big segments should be. </p>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </dd>
+                    </dl>
+                </div>
+            </dd>
+            <dt><span class="term">DataAdvert</span></dt>
+            <dd>
+                <p>A <code class="code">DataAdvert</code> is used to <span class="emphasis"><em>publish</em></span> the
+                    existence of data and the host who has that data. It is used by both
+                    publishing agents, and caching agents. A caching agent is one that has
+                    previously retrieved information about data (in the form of a
+                    <code class="code">DataPointer</code>), has downloaded the data, and is notifying
+                    the network that it now has the data. This type contains a
+                    <code class="code">DataDescription</code>, an endpoint, as well as optional
+                    <code class="code">Constraints.</code> A minter (e.g. a publisher) of a
+                    <code class="code">DataDescription</code> should include a <code class="code">FileHash</code>
+                    including segment hashes. When a caching agent notifies the network that
+                    it has cached the data, then these details are not needed, because
+                    agents can match against id of the<code class="code">DataDescription</code>. </p>
+
+                <div class="variablelist">
+                    <dl>
+                        <dt><a name="id-constraints"></a><span class="term">Constraints</span></dt>
+                        <dd>
+                            <p>These are simple properties that can be added to a
+                                <code class="code">DataAdvert</code>. They have a
+                                <code class="varname">Type</code>, one of
+                                <code class="varname">String</code>,<code class="varname">Date</code>,
+                                <code class="varname">Integer</code>,<code class="varname">Double</code>,
+                                <code class="varname">Long</code> or<code class="varname">Boolean</code>, as
+                                well as a string key and string value. Currently, matching
+                                on these is very primitive, in fact almost non-existent, and
+                                is on the TODO list. </p>
+                        </dd>
+                    </dl>
+                </div>
+            </dd>
+            <dt><span class="term">DataQuery</span></dt>
+            <dd>
+                <p>This type is used to query for data. Like the<code class="code">DataAdvert</code>,
+                    this can contain <code class="code">Constraints</code> to restrict the types of data
+                    that are received from the query. The response to a
+                    <code class="code">DataQuery</code> is a<code class="code">PointerCollection</code>. A pointer
+                    collection contains one or more<code class="code">DataPointers</code>. A
+                    <code class="code">DataAdvert</code> may contain information that is not
+                    necessarily intended for public consumption, in particular the
+                    constraints. This is why adverts are not returned when agents query for
+                    data, but <code class="code">DataPointers</code> instead. Hence, logically, a
+                    <code class="code">DataPointer</code> is created or amended when an advert is
+                    received by an agent that also responds to<code class="code">DataQueries</code>,
+                    i.e., one that issues <code class="code">DataPointers</code> on request. </p>
+            </dd>
+            <dt><span class="term">PointerCollection</span></dt>
+            <dd>
+                <p>This type is simply a list of<code class="code">DataPointers</code>. </p>
+
+                <div class="variablelist">
+                    <dl>
+                        <dt><a name="id-pointer"></a><span class="term">DataPointer</span></dt>
+                        <dd>
+                            <p>This type contains a <code class="code">DataDescription</code> and list
+                                of<code class="code">Endpoints</code>. These are the endpoints from
+                                which the data can be retrieved. It is generated by services
+                                that have received any number of <code class="code">DataAdverts</code>
+                                corresponding to a particular<code class="code">DataDescription</code>.
+                                It is up to the client to decide which endpoints to use and
+                                which to forego. </p>
+                        </dd>
+                    </dl>
+                </div>
+            </dd>
+            <dt><span class="term">Endpoint</span></dt>
+            <dd>
+                <p>This type is essentially a URI, but it can also contain another URI
+                    within it. When an endpoint appears in a <code class="code">DataPointer</code> or
+                    <code class="code">DataAdvert</code>, it may contain a <code class="varname">meta</code>
+                    URI. This is URI from which metadata about the data the main URI points
+                    to can be retrieved. This allows clients to query the particular
+                    endpoint to find out what segments it has. Currently two query strings
+                    are supported, which, when appended to the meta URI return slightly
+                    different data. </p>
+
+                <p>The first is<code class="varname">filehash</code>, which returns the
+                    <code class="code">FileHash</code> of a description referenced by the query
+                    value. </p>
+
+                <div class="example"><a name="d4e267"></a>
+
+                    <p class="title"><b>Example&nbsp;1.&nbsp;FileHash query to the meta endpoint
+                        http://www.example.org/attic/meta </b></p>
+
+                    <div class="example-contents">
+
+                        <pre class="programlisting">http://www.example.org/attic/meta?filehash={description-id}</pre>
+                    </div>
+                </div>
+                <p><br class="example-break">
+                </p>
+
+                <p>The second is<code class="varname">description</code>, and returns a
+                    representation of a full<code class="code">DataDescription</code>. </p>
+
+                <div class="example"><a name="d4e273"></a>
+
+                    <p class="title"><b>Example&nbsp;2.&nbsp;DataDescription query to the meta endpoint
+                        http://www.example.org/attic/meta </b></p>
+
+                    <div class="example-contents">
+
+                        <pre class="programlisting">http://www.example.org/attic/meta?description={description-id}</pre>
+                    </div>
+                </div>
+                <p><br class="example-break">
+                </p>
+
+                <p>The current implementation also supports path variants of these, i.e.,
+                    http://www.example.org/attic/meta/description/{description-id} and
+                    http://www.example.org/attic/meta/filehash/{description-id}, although
+                    this is not considered officially supported. </p>
+            </dd>
+        </dl>
+    </div>
+    <p>
+    </p>
+
+    <p>How these messages are used is described in <a class="link" href="#sect-roles" title="Role Implementations">Role
+        Implementations </a>
+    </p>
+</div>
+
+
+<div class="sect1" title="Role Implementations">
+    <div class="titlepage">
+        <div>
+            <div><h2 class="title" style="clear: both"><a name="sect-roles"></a>Role Implementations</h2></div>
+        </div>
+    </div>
+
+    <p>The way roles are defined in the interfaces and utility implementations of
+        <code class="code">ServiceRole</code> and <code class="code">ChannelRequestHandler</code> means there is a lot
+        of flexibility in how the different capabilities are combined to create nodes that
+        perform particular services to the network. This is to allow for flexible network
+        conditions. For example, in a centralized system, there may be a single authorized node
+        that performs the registration and exposure of published data. In a decentralized
+        network, on the other hand, nodes may publish their data to their neighbours, or a
+        federation of look up services. These differences infer that the logic implemented by
+        nodes may vary, in terms of security and the roles that nodes need to support. </p>
+
+    <p>Figure <a class="xref" href="#fig-role-impl" title="Figure&nbsp;4.&nbsp;Role Implementations">Role Implementations</a> shows the currently
+        implemented Roles. These
+        include: </p>
+
+    <div class="variablelist">
+        <dl>
+            <dt><span class="term">DataWorker</span></dt>
+            <dd>
+                <p>This component knows how to pull data given a remote endpoint. This
+                    endpoint should point to a <code class="code">DataPointer</code> document. It
+                    implements the <code class="code">DataReceiver</code> interface which is notified
+                    when data has finished downloading. It does not support any persistent
+                    services other than the configuration service described next. </p>
+            </dd>
+            <dt><span class="term">ConfigServiceRole</span></dt>
+            <dd>
+                <p>The Web configuration service can be attached to an Attic
+                    instance to provide online configuration. This runs on the default port
+                    of 28842 unless the port number has been set in the configuration
+                    itself. It is available at the absolute path
+                    <code class="varname">/attic/config</code> on the host it is running on.
+                </p>
+            </dd>
+            <dt><span class="term">DataPublisher</span></dt>
+            <dd>
+                <p>The <code class="code">DataPublisher</code> component can index local files and
+                    publish <code class="code">DataAdverts</code> given a bootstrap endpoint which to
+                    publish to. It implements the <code class="code">Publisher</code> interface on top of
+                    extending<code class="code">AbstractServiceRole</code>. Indexing involves taking
+                    a File or Directory and a template <code class="code">DataDescription</code>
+                    specifying things like project and description, and creating a full
+                    description with data chunk hashes. During the process of indexing the
+                    any files being indexed are renamed to the identified of the data
+                    description, and by default the description is written to disk, to allow
+                    the mapping between a file and a description to be discovered again on
+                    start up. The default location to put files to be indexed is
+                    <code class="code">&lt;attic-home-directory&gt;/&lt;role&gt;/data</code> where
+                    <code class="code">role</code> is the role of the component storing data. For a
+                    data publisher this is<code class="code">dp</code>, for a data center, this
+                    <code class="code">dc</code> and for a worker this is<code class="code">dw</code>. The default
+                    location for writing out matching data descriptions is
+                    &lt;attic-home-directory&gt;/&lt;role&gt;/desc. So for example, if the Attic
+                    home directory is<code class="code">~/.attic</code>, which is the default on
+                    Unix-like machines, then the data directory for a publisher would be
+                    <code class="code">~/.attic/dp/data</code> and the directory in which
+                    descriptions are stored would be <code class="code">~/.attic/dp/desc</code>
+                </p>
+            </dd>
+            <dt><span class="term">DataSeed</span></dt>
+            <dd>
+                <p>The <code class="code">DataSeed</code> component extends the
+                    <code class="code">DataPublisher</code> by adding a
+                    <code class="code">SeedRequestHandler</code> to its list of message handlers. A
+                    seed handler allows remote clients to push data to it. This data is then
+                    published by the seed. The handler first accepts a
+                    <code class="code">DataDescription</code> which is expected to be a template,
+                    that is, excluding a list of segments. The identifier, if present, will
+                    also be overwritten. In response to receipt of a description, the seed
+                    handler returns an endpoint on the seed node of where to send the actual
+                    data. The client then uses an HTTP POST to send the data. When the seed
+                    has received the data, it publishes the data description to its lookup
+                    service as a <code class="code">DataAdvert</code> containing an endpoint on the seed
+                    node. In return it gets an endpoint to a <code class="code">DataPointer</code> from
+                    the lookup service. The seed then forwards this to the client. </p>
+
+                <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
+
+                    <p>Currently the seed returns an <code class="code">attic</code> or
+                        <code class="code">attics</code> URL to the client. These URL schemes are
+                        used to allow transparent data access from an endpoint
+                        referencing a <code class="code">DataPointer</code> document. The
+                        <code class="code">attic</code> scheme is used for non-secured endpoints
+                        (HTTP) and the <code class="code">attics</code> scheme is used for secured
+                        (HTTPS) endpoints. By changing the scheme of the URL to its HTTP
+                        variant will allow normal retrieval of the data pointer from the
+                        remote endpoint. </p>
+                </div>
+                <p>
+                </p>
+            </dd>
+            <dt><span class="term">DataLookup</span></dt>
+            <dd>
+                <p>This component acts as a look up service for other nodes. It
+                    implements the <code class="code">AdvertProcessor</code> interface on top of
+                    extending<code class="code">AbstractServiceRole</code>. In particular it accepts
+                    requests to publish <code class="code">DataAdverts</code> and requests to cache data
+                    via<code class="code">DataQueries</code>. The current implementation provides the
+                    path <code class="code">/dl/meta/pointer</code> to which requests to publish and
+                    cache should be directed via a POST request, e.g.
+                    <code class="code">https://example.org:8080/dl/meta/pointer</code>. This is the
+                    <span class="emphasis"><em>publish URL</em></span> When a caching agent has downloaded
+                    data, it notifies the lookup service with a <code class="code">DataAdvert</code> in a
+                    POST request. The endpoint to which this is directed is the endpoint of
+                    the existing pointer to which it wants to add its own endpoint, e.g.,
+                    <code class="code">https://example.org:8080/dl/meta/pointer/1234567890</code>.
+                    This is the<span class="emphasis"><em>pointer URL</em></span>. When a
+                    <code class="code">DataLookup</code> receives a publish request containing a
+                    <code class="code">DataAdvert</code> the implementation does the following: </p>
+
+                <div class="itemizedlist">
+                    <ul class="itemizedlist" type="disc">
+                        <li class="listitem">
+                            <p>If the request is directed at the <span class="emphasis"><em>publish URL
+                            </em></span> and no matching <code class="code">DataAdvert</code> is found
+                                in the local cache, then the <code class="code">DataAdvert</code> is
+                                cached and a new <code class="code">DataPointer</code> is created from
+                                the description and the endpoint in the advert. If a
+                                matching <code class="code">DataAdvert</code> is found locally, then an
+                                associated local <code class="code">DataPointer</code> will also exist.
+                                If this is the case, then this is a request to update, or
+                                re-publish the<code class="code">DataPointer</code>. The
+                                <code class="code">DataDescription</code> in the
+                                <code class="code">DataAdvert</code> is copied to the local
+                                <code class="code">DataPointer</code>, as well as the endpoint in the
+                                advert. Existing endpoints in the pointer are
+                                <span class="emphasis"><em>not</em></span> removed. The assumption is made
+                                that the data being referenced by the advert and pointer has
+                                not changed. Otherwise a new <code class="code">DataAdvert</code> should
+                                be published. Updating, or republishing an advert is subject
+                                to ownership constraints. Ownership of a
+                                <code class="code">DataAdvert</code> is currently expressed by via
+                                the identity defined on a secure connection, that is, the
+                                identity of requester as determined by the certificate being
+                                used in the communication is mapped to the advert at publish
+                                time. If an update is requested, and an identity is mapped
+                                to an advert, and the update request does not contain an
+                                identity (i.e., is not performed over a secure connection),
+                                or the supplied identity does not match, then the update
+                                will fail. If the identities match, then the request has
+                                come from the minter of the <code class="code">DataAdvert</code> and
+                                therefore has authority to manipulate the metadata. Note
+                                that deleting an advert, and hence the
+                                <code class="code">DataPointer</code> associated with it can also
+                                only be done if the initial advert was published using an
+                                identity and the request to delete has a matching identity. </p>
+
+                            <p>These constraints are overridden if the Attic
+                                security configuration <code class="code">setTestMode</code> property is
+                                set to true. (See section <a class="link" href="#sect-config" title="Configuration">Configuration </a> for more
+                                details. </p>
+
+                        </li>
+                        <li class="listitem">
+                            <p>If the request is directed at the<span class="emphasis"><em>pointer
+                                URL</em></span>, then a mapped <code class="code">DataPointer</code>
+                                should already be cached by the lookup service. If not, an
+                                error is returned. Otherwise, the endpoint in the
+                                <code class="code">DataAdvert</code> is added to the endpoints in the
+                                extant<code class="code">DataPointer</code>. </p>
+
+                            <p>To remove itself from the list of endpoints in a
+                                particular pointer, an agent can send a
+                                <code class="code">DataAdvert</code> with a constraint key of
+                                <code class="varname">dereference</code> and a value of "true".
+                            </p>
+                        </li>
+                        <li class="listitem">
+                            <p>When the implementation encounters a
+                                <code class="code">DataQuery</code>, it expects the query to be
+                                directed at the<span class="emphasis"><em>publish URL</em></span>, not a
+                                <span class="emphasis"><em>pointer URL</em></span>. This is because a
+                                request to cache is for any data, not a particular file. The
+                                term <span class="emphasis"><em>any</em></span> is qualified by the
+                                <code class="code">Constraints</code> set on the query itself. The
+                                response to a <code class="code">DataQuery</code> is a
+                                <code class="code">PointerCollection</code>. This is a list of
+                                <code class="code">DataPointers</code> that match the query. As
+                                mentioned previously, matching and constraints are still
+                                under specified and not implemented fully. The main
+                                constraint that is currently implemented is the
+                                <code class="varname">replica</code> constraint on a advert. This
+                                value restricts the number of times a data pointer is issued
+                                in response to a query. Other than that a very simple
+                                equality match is currently made between advert constraints
+                                and query constraints, so for example, if both share a
+                                <code class="varname">project</code> constraint with a string type
+                                this is equal, then the query will match the advert.
+                                Constraints have types (see above) which will be used to
+                                express slightly better matching semantics, for example
+                                <span class="emphasis"><em>before</em></span> and
+                                <span class="emphasis"><em>after</em></span> for date types, and
+                                <span class="emphasis"><em>less than</em></span> and <span class="emphasis"><em>more than
+                                </em></span> for number types. </p>
+                        </li>
+                    </ul>
+                </div>
+                <p>
+                </p>
+
+                <p></p>
+            </dd>
+            <dt><span class="term">DataCenter</span></dt>
+            <dd>
+                <p>A data center acts as a client in that it requests data pointers from
+                    a look up service, and downloads the data from the endpoints described
+                    in the pointers. But a data center does not typically process ant data,
+                    but simply caches it. It therefore sends a <code class="code">DataAdvert</code> to
+                    the look up service once it has downloaded the data, in the hope that
+                    the look up service will add its endpoint to the relevant
+                    <code class="code">DataPointer</code>. Data centers are also the nodes that send
+                    <code class="code">DataQueries</code> to the look up service, and hence receive a
+                    list of <code class="code">DataPointers</code> in response to the query. </p>
+            </dd>
+        </dl>
+    </div>
+    <p>
+    </p>
+
+    <p>
+    </p>
+
+    <div class="figure"><a name="fig-role-impl"></a>
+
+        <p class="title"><b>Figure&nbsp;4.&nbsp;Role Implementations</b></p>
+
+        <div class="figure-contents">
+
+            <div class="mediaobject" align="center"><img src="images/roles-impl.png" align="middle" alt="Role Implementations"></div>
+        </div>
+    </div>
+    <p><br class="figure-break">
+    </p>
+</div>
+
+<div class="sect1" title="Downloading">
+    <div class="titlepage">
+        <div>
+            <div><h2 class="title" style="clear: both"><a name="sect-download"></a>Downloading</h2></div>
+        </div>
+    </div>
+
+    <p>The downloading code is the most complicated section of code in Attic. The aim
+        of the design is to be as extensible as possible considering the various dependencies
+        and relationships between components, because the richness of features that could be
+        added is almost unlimited. </p>
+
+
+    <p>The process of downloading data begins with a<code class="code">DataPointer</code>. As described in
+        section<a class="link" href="#sect-message-types" title="Message Types">Message Types</a>, a
+        <code class="code">DataPointer</code> contains a metadata description and a list of endpoints
+        that have the data associated with the data. The first step in the download process is
+        to contact all the endpoints that expose a <code class="varname">meta</code> URL along with the
+        data URL. A query is sent to the <code class="varname">meta</code> URL for a list of the hashed
+        segments the host has. This series of queries is performed by a
+        <code class="code">RequestResolver</code>. The output of the process results in a
+        <code class="code">RequestCollection</code>. This is a list of <code class="code">EndpointRequest</code>
+        objects. An <code class="code">EndpointRequest</code> is a mapping of many hashed segments to a
+        single host. A <code class="code">RequestCollection</code> orders the requests according to the RTT
+        time of the request for hashed segments. Endpoints that did not supply a
+        <code class="varname">meta</code> endpoint are added as reserve mappings to the collection and
+        used as a lst resort during downloading. Hence, not supplying a <code class="varname">meta</code>
+        endpoint results in the host always being far down the list of potential endpoints. This
+        mechanism is used by the seed component to deprioritize itself. </p>
+
+
+    <p>downloading data based on a <code class="code">RequestCollection</code> is done using a
+        <code class="code">Downloader</code> instance. <code class="code">Downloader</code> takes, or creates a
+        <code class="code">DownloadTableCreator</code> instance. A <code class="code">DownloadTableCreator</code>
+        takes a <code class="code">RequestCollection</code> and creates a <code class="code">DownloadTable</code> from it.
+        This table contains contains a queue of <code class="code">SegmentRequest</code> objects. These are
+        mappings of a single endpoint to a single hashed segment as defined in the data
+        description document in the original<code class="code">DataPointer</code>. They also contain a list
+        of sub-segments. These sub-segments are the actual chunks that are downloaded and may be
+        smaller than the hashed segment defined in the description. <code class="code">SegmentRequests</code>
+        are prioritized using the policy of the table creator and a
+        <code class="code">SegmentRequestComparator</code> implementation that is supported by the
+        <code class="code">DownloadTable</code> instance being created. </p>
+
+    <p>Once a <code class="code">DownloadTable</code> instance is available, the downloader uses
+        implementations of the <code class="code">AbstractRequestor</code> to remove
+        <code class="code">SegmentRequests</code> from the table's queue. The amount of concurrent
+        threads performing download is determined by the <code class="code">getMaxFileConnections</code>
+        configuration parameter of the Attic download config (see<a class="link" href="#sect-config" title="Configuration">Configuration section</a>).
+        When a requestor has completed
+        the download of a sub-segment contained in a<code class="code">SegmentRequest</code>, it notified the
+        table of either success or failure. Depending on policy, a retry may be attempted, or an
+        alternative endpoint with the same hashed segment is located in the table and used to
+        complete the download. This process continues until the status of the data being rebuilt
+        matches the status of the data as defined during construction of the
+        <code class="code">RequestCollection</code>. If a full set of hashed segments was attainable from
+        the endpoints provided in the <code class="code">DataPointer</code> then the
+        <code class="varname">COMPLETE</code> status should be achieved during download. If a table
+        cannot achieve the initial status, and the table is exhausted, with no more possible
+        endpoints to download from, then the table completes anyway, leaving the downloaded data
+        in an unfinished state, returning an appropriate status such as
+        <code class="varname">DISCONTINUOUS</code>, signalling that there are gaps in the downloaded
+        data, or<code class="varname">CONTINUOUS</code>, meaning data is either missing from the beginging
+        of the data, or the end of it. </p>
+
+    <p>From an application perspective, downloading is done by passing a
+        <code class="code">RequestCollection</code>, and an instance of the <code class="code">DataReceiver</code>
+        interface to a downloader and then calling its <code class="code">download()</code> method. The
+        <code class="code">DataReceiver</code> receives notification when download has completed. </p>
+
+        <pre class="programlisting">
+
+            public interface DataReceiver {
+
+            public void dataArrived(DataEvent event);
+
+            }
+        </pre>
+
+    <p>A class diagram showing the main components involved in downloading is available<a class="link" href="images/download.pdf"
+                                                                                          target="_blank">here</a>. </p>
+</div>
+
+<div class="sect1" title="Configuration">
+    <div class="titlepage">
+        <div>
+            <div><h2 class="title" style="clear: both"><a name="sect-config"></a>Configuration</h2></div>
+        </div>
+    </div>
+
+    <p>An instance of Attic comes with a set of configuration classes dealing with
+        different aspects of the system. These are listed below. Readers are encouraged to look
+        at the source code for the particular properties exposed by the configurations. </p>
+
+    <div class="itemizedlist">
+        <ul class="itemizedlist" type="disc">
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.config.security.SecurityConfig</code> which deals with
+                    security related configuration. </p>
+
+                <div class="itemizedlist">
+                    <ul class="itemizedlist" type="circle">
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setSecure(boolean):void</code>
+                            </p>
+
+                            <p>Whether to use secure connections or not (i.e., HTTP or
+                                HTTPS). </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setRequireClientAuthentication(boolean):void</code>
+                            </p>
+
+                            <p>Whether or not to require clients to authenticate themselves
+                                with a certificate if using secure connections. </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">addKeyStore(Keystore keystore):void</code>
+                            </p>
+
+                            <p>Add a keystore (local private key and matching public
+                                certificate in a Java keystore) to the security config. When a
+                                secure socket is created, then the local keystores are used to
+                                locate a certificate for the local peer. Attic uses the
+                                standard Java mechanism for storing keys and certificates in
+                                <span class="emphasis"><em>keystore</em></span> files. The
+                                <code class="code">org.atticfs.config.security.Keystore</code> class is a
+                                container for data relating to a Java keystore. It includes
+                                properties for specifying the location of the keystore, (i.e. a
+                                file path), the keystore password, key password, keystore alias,
+                                keystore type and encryption algorithm. An
+                                <code class="code">org.atticfs.config.security.Keystore</code> can also
+                                be mapped to an authority (host/port combination). This allows
+                                different keys to be used depending on the port the server is
+                                running on. A value of <code class="code">default</code> means the keystore
+                                will be used for any connections that do not specify a host and
+                                port matching the current endpoint. </p>
+
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">addTrustStore(Keystore keystore):void</code>
+                            </p>
+
+                            <p>Similar to the <code class="code">addKeystore</code> method, this adds a
+                                trust keystore. These are used when creating a secure socket.
+                                The certificate of the remote peer is matched against
+                                certificates in the trust stores. A certificate will be allowed
+                                if it appears in the trust store, or is signed by a certificate
+                                in the trust store. By default Attic also trusts the
+                                default certificate authorities that ship with the current Java
+                                installation. </p>
+
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setTestMode(boolean testMode)</code>
+                            </p>
+
+                            <p>Primarily designed for debugging, this allows the deletion and
+                                updating of pointer metadata without the need for an identity to
+                                be provided in the request. Default is false. It also supports
+                                the listing of all data pointers currently stored by a lookup
+                                service, wrapped in a <code class="code">PointerCollection</code> container.
+                            </p>
+                        </li>
+                    </ul>
+                </div>
+                <p>
+                </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.config.data.DataConfig</code> which deals with data
+                    related configuration, for example setting hashed chunk sizes and specifying
+                    how much local disk space should be provided to Attic for data
+                    storage. </p>
+
+                <div class="itemizedlist">
+                    <ul class="itemizedlist" type="circle">
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setMaxLocalData(long maxLocalData)</code>
+                            </p>
+
+                            <p>Set the total amount of space (in bytes) that Attic is
+                                allowed to use on downloaded data. This is relevent for data
+                                center nodes in particular. The default is 100GB </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setFileSegmentHashSize(int fileSegmentHashSize)</code>
+                            </p>
+
+                            <p>Set the size (in bytes) that hashed segments of data should
+                                be. The default is 1/2 MB. </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setDataQueryInterval(long dataQueryInterval)</code>
+                            </p>
+
+                            <p>Sets the interval between querying for data in seconds. This
+                                is used particularly by data center nodes. The default is 1
+                                hour. </p>
+                        </li>
+                    </ul>
+                </div>
+                <p>
+                </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.config.download.DownloadConfig</code> which deals with
+                    download related configuration, for example how many threads to allow per
+                    download. </p>
+
+                <div class="itemizedlist">
+                    <ul class="itemizedlist" type="circle">
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setStreamToTargetFile(boolean streamToTargetFile)</code>
+                            </p>
+
+                            <p>If set to<code class="varname">true</code>, then when downloading,
+                                interim files will not be created during download. Instead data
+                                will be written directly to the final file. Downloaded blocks
+                                that do not pass verification are marked as invalidated portions
+                                of the final file until a segment download for that file
+                                succeeds. </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setBufferSize(int bufferSize)</code>
+                            </p>
+
+                            <p>Sets the in-memory buffer size while downloading.</p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setMaxTotalConnections(int maxTotalConnections)</code>
+                            </p>
+
+                            <p>Sets the maximum total connections (i.e. threads) allowed by a
+                                client during downloading. </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setMaxFileConnections(int maxFileConnections)</code>
+                            </p>
+
+                            <p>Sets the maximum total connections (i.e. threads) allowed by a
+                                client per file. </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setConnectionIdleTime(int connectionIdleTime)</code>
+                            </p>
+
+                            <p>Sets the idle time on open connections. This is used at the
+                                server side to close connectins that have been left open by
+                                clients. The default is 3 minutes. </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setDownloadChunkSize(int downloadChunkSize)</code>
+                            </p>
+
+                            <p>Sets the size of chunks to download. These are typically
+                                smaller than hashed chunks as defined in the metadata. This
+                                means multiple smaller chanuks are downloaded before a single
+                                hashed chunk of data can be verified. The default is 256Kb.
+                            </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setRetryCount(int retryCount)</code>
+                            </p>
+
+                            <p>Sets the amount of times a failed download for a chunk is
+                                retried (from the same server). The default is 2. </p>
+                        </li>
+                    </ul>
+                </div>
+                <p>
+                </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.config.stream.StreamConfig</code> which deals with
+                    streaming related configuration, for example whether to attempt verification
+                    of chunks before returning them to the application. This is used by the
+                    <code class="code">AtticConnection</code> class that extends
+                    <code class="code">URLConnection</code> and is used for the <code class="code">attic</code> URL
+                    scheme. </p>
+
+                <div class="itemizedlist">
+                    <ul class="itemizedlist" type="circle">
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setAttemptVerification(boolean attemptVerification)</code>
+                            </p>
+
+                            <p>Set whether to attempt verification of data before passing it
+                                to the application stream. Actual verification is dependent on
+                                the hashed chunk size defined in the data description of the
+                                data being downloaded, and the size of the im-memory buffer
+                                described below. </p>
+                        </li>
+                        <li class="listitem">
+                            <p>
+                                <code class="code">setMaxBufferSize(int maxBufferSize)</code>
+                            </p>
+
+                            <p>Sets the maximum in-memory buffering of streaming data. If
+                                this value is greater than or equal to the size of hashed chunks
+                                in the data, and attempt verification is set to true, then data
+                                will be verified before passing it to the application stream.
+                                Verification failures will be retried. </p>
+                        </li>
+                    </ul>
+                </div>
+                <p>
+                </p>
+
+                <div class="note" title="Note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3>
+
+                    <p>If you are using Attic simply as a URL protocol handler,
+                        then you can set these properties directly on the
+                        <code class="code">AtticConnection</code> class using the
+                        <code class="code">URLConnection</code> method
+                        <code class="code">setRequestProperty(String, key, String value).</code> The
+                        memory buffer key is
+                        <code class="code">org.atticfs.protocol.attic.max.inmemory.buffer</code> and
+                        the verification attempt key is
+                        <code class="code">org.atticfs.protocol.attic.attempt.verification</code>.
+                        The values can be given as strings, i.e., for the int
+                        <code class="varname">10</code>, "10" and for the boolean
+                        <code class="varname">true</code>, "true". </p>
+                </div>
+                <p>
+                </p>
+            </li>
+            <li class="listitem">
+                <p><code class="code">org.atticfs.config.html.HtmlConfig</code>. This class wraps the
+                    above configuarion objects and exposes them via an HTML interface. It is
+                    used by the <code class="code">ConfigServiceRole</code> and
+                    <code class="code">ConfigRequestHandler</code> to expose a Web interface to the
+                    configuration options. This interface is typically available at the path
+                    <code class="code">/attic/config</code> on a running instance of Attic </p>
+            </li>
+        </ul>
+    </div>
+    <p>
+    </p>
+</div>
+
+<div class="sect1" title="Security">
+    <div class="titlepage">
+        <div>
+            <div><h2 class="title" style="clear: both"><a name="sect-security"></a>Security</h2></div>
+        </div>
+    </div>
+
+    <p>Security in Attic is currently implemented using TLS and mutual authentication
+        with X509 certificates. Attic requires Java <span class="emphasis"><em>keystores</em></span> to be
+        available at runtime containing local keys and certificates, as well as trusted
+        certificates. These can be set using the security configuration options. </p>
+
+    <p>While signed certificates provide authentication of an entity, they do not allow for
+        more fine grained authorization of actions based on the identity in the certificate. To
+        achieve this, Attic uses a mapping between an application-level defined action,
+        and a distinguished name (common name, organization, country etc.) as defined in a
+        certificate. </p>
+
+    <p>The <code class="code">ServiceRole</code> interface, as described in Section <a class="link" href="#sect-message"
+                                                                                       title="Message Handling Components">Message Handling
+        Components </a> exposes an
+        <code class="code">addIdentity</code> and <code class="code">removeIdentity</code> method. The
+        <code class="code">Identity</code> interface encapsulates a unique identity, an object that is
+        used to determine the authenticity of the identity, along with a list of roles
+        supported, or allowed, by the identity. Two implementations currently exist -
+        <code class="code">X509Identity</code> and<code class="code">DNIdentity</code>. The first of these is is used
+        when a message arrives at a service. The <code class="code">ChannelData</code> is populated with the
+        remote certificate and local certificate (if any) being used during the transaction.
+        These can be retrieved using the <code class="code">ChannelData</code> methods
+        <code class="code">getRemoteIdentity</code> and <code class="code">getLocalIdentity</code> respectively. The
+        <code class="code">DNIdentity</code> is currently used in the default in-memory identity store
+        which stores <code class="code">Identities</code> and their allowed roles. Equality between the
+        distinguished name of the two types of <code class="code">Identity</code> is used to determine
+        whether the currently connected peer is allowed to perform a particular action. As
+        described in section<a class="link" href="#sect-message" title="Message Handling Components">Message Handling Components</a>,
+        the current action is determined by querying the appropriate ChannelRequestHandler if it
+        implements the <code class="code">Authenticating</code> interface. Hence a correlation between the
+        <code class="code">Autheticating</code> instance's action, and the roles allowed by a particular
+        <code class="code">Identity</code> determine whether a peer may perform a particular request. </p>
+
+    <div class="caution" title="Caution" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Caution</h3>
+
+        <p>When calling the <code class="code">addIdentity</code> or <code class="code">removeIdentity</code> methods
+            of<code class="code">ServiceRole</code>, be sure to do this after the
+            <code class="code">init(Attic)</code> has been called. Typically this should be after
+            calling the <code class="code">init</code> method of the current Attic instance. </p>
+    </div>
+
+</div>
+
+<div class="sect1" title="Persistence">
+    <div class="titlepage">
+        <div>
+            <div><h2 class="title" style="clear: both"><a name="sect-persist"></a>Persistence</h2></div>
+        </div>
+    </div>
+
+    <p>The core code does not support persistence in any serious form.
+        <code class="code">DataDescriptions</code> are saved to disk, as are configuration properties.
+        Other than that, the default implementations use in-memory storage for caching
+        identities and the various messages exchanged. This is largely suitable for client-side
+        nodes such as workers, or service nodes that are transient. </p>
+
+    <p>There are various types of storage defined. Different implementations of stores can be
+        set on the role implementations, allowing for more sophisticated storage scenarios. The
+        storage interfaces are defined in the <code class="code">org.atticfs.store</code> package. A brief
+        enumeration of the interfaces is given below. Developers are asked to look at the source
+        code for details of the methods defined by the interfaces. </p>
+
+    <div class="itemizedlist">
+        <ul class="itemizedlist" type="disc">
+            <li class="listitem">
+                <p>
+                    <code class="code">DataAdvertStore</code> - This manages storage of adverts. As part of
+                    this, it is capable of mapping an identity to an advert, thus providing
+                    access to the authorized publisher of an advert. It also receives
+                    notification when an advert is propagated to the network by the owner of the
+                    store. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">DataQueryStore</code> - This manages storage of queries. It also
+                    receives notification when a query has been propagated to the network in
+                    some way by the owner of the store. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">DataPointerStore</code> - This manages storage of data pointers as
+                    well as the mapping between adverts and pointers. For example, the methods
+                    to add and update a <code class="code">DataPointer</code> take a <code class="code">DataAdvert</code>
+                    as a parameter. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">DescriptionStore</code> - This manages storage of
+                    <code class="code">DataDescriptions</code> and files associated with them. It also provides access to
+                    <code class="code">FileHash</code> objects associated with descriptions. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">DataPointerLocationStore</code> - This maps <code class="code">DataPointers</code>
+                    received by clients (e.g., publishers, data centers) to where they can be
+                    located on the network. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">IdentityStore</code> - This stores <code class="code">Identity</code> objects.
+                </p>
+            </li>
+        </ul>
+    </div>
+    <p>
+    </p>
+
+    <p>In order to develop implementations of the interfaces described above, the following
+        Java classes must be mapped to persistent entities in some way. Most of these are part
+        of the <code class="code">types</code> package that contains data types that are sent over the wire.
+        However, implementations may want wrap these types in container classes for persistence
+        to retain further data.For example the current implmentation keeps a track of how many
+        times a data pointer has been propagated to the network and maps this back to the
+        <code class="varname">replica</code> constraint of the associated data advert. </p>
+
+    <div class="itemizedlist">
+        <ul class="itemizedlist" type="disc">
+            <li class="listitem">
+                <p><code class="code">java.io.File</code>. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.types.DataDescription</code> and its contained objects
+                    <code class="code">org.atticfs.types.FileHash</code> and<code class="code">
+                    org.atticfs.types.FileSegmentHash</code>. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.types.DataAdvert</code> and its contained objects
+                    <code class="code">org.atticfs.types.DataDescription</code>,
+                    <code class="code">org.atticfs.types.Endpoint</code> and
+                    <code class="code">org.atticfs.types.Constraints</code>. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.types.DataQuery</code> and its contained object
+                    <code class="code">org.atticfs.types.Constraints</code>. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.types.DataPointer</code> and its contained objects
+                    <code class="code">org.atticfs.types.DataDescription</code> and
+                    <code class="code">org.atticfs.types.Endpoint</code>. </p>
+            </li>
+            <li class="listitem">
+                <p>
+                    <code class="code">org.atticfs.identity.Identity</code> implementations. Currently
+                    defined implementations are
+                    <code class="code">org.atticfs.impl.identity.X509Identity</code>, which is associated
+                    with an X509 certificate, and
+                    <code class="code">org.atticfs.impl.identity.DNIdentity</code> which is associated
+                    with a distinguished name. </p>
+            </li>
+        </ul>
+    </div>
+    <p>
+    </p>
+
+</div>
+
+<div class="sect1" title="Examples">
+<div class="titlepage">
+    <div>
+        <div><h2 class="title" style="clear: both"><a name="sect-examples"></a>Examples</h2></div>
+    </div>
+</div>
+
+<p>The following code snippets provide examples of how to run the Attic code for
+    various purposes. The examples below are largely taken from the
+    <code class="code">org.atticfs.test.run</code> and <code class="code">org.atticfs.test.protocol</code> package
+    of the source distribution. </p>
+
+<div class="example"><a name="d4e670"></a>
+
+    <p class="title"><b>Example&nbsp;3.&nbsp;Attic URL handler</b></p>
+
+    <div class="example-contents">
+
+        <p>This registers the adics URL schemes, then creates a URL to a
+            <code class="code">DataPointer</code>, and then opens the stream and writes the contents to
+            file. </p>
+            <pre class="programlisting">
+                // register the attic: and attics: (secure) URL schemes
+                // NOTE: this will not destroy existing mappings.
+                AtticProtocol.registerAttic();
+                // The URL should point to a DataPointer
+                URL url = new URL("attic://www.example.org:9876/dl/meta/pointer/1234567890");
+                File file = new File("out.dat");
+                // open the stream
+                InputStream in = url.openStream();
+                FileOutputStream fout = new FileOutputStream(file);
+                byte[] bytes = new byte[8192];
+                int c;
+                while ((c = in.read(bytes)) != -1) {
+                fout.write(bytes, 0, c);
+                }
+                fout.flush();
+                fout.close();
+                in.close();
+            </pre>
+    </div>
+</div>
+<br class="example-break">
+
+<div class="example"><a name="d4e675"></a>
+
+    <p class="title"><b>Example&nbsp;4.&nbsp;Creating a <code class="code">DataWorker</code> and downloading data. </b></p>
+
+    <div class="example-contents">
+
+        <p>This also attaches a configuration service handler to provide Web configuration. </p>
+
+            <pre class="programlisting">
+                Attic = new Attic();
+                attic.setRole(StringConstants.ROLE_DW);
+                ConfigServiceRole confService = new ConfigServiceRole();
+                attic.attach("attic", confService);
+                DataWorker dw = new DataWorker();
+                attic.attach(StringConstants.DATA_WORKER, dw);
+                attic.init();
+                try {
+                dw.getPointer(new Endpoint("https://example.org/dl/meta/pointer"));
+                } catch (IOException e) {
+                e.printStackTrace();
+                }
+            </pre>
+    </div>
+</div>
+<br class="example-break">
+
+<div class="example"><a name="d4e680"></a>
+
+    <p class="title"><b>Example&nbsp;5.&nbsp;Creating a <code class="code">DataLookup</code> service. </b></p>
+
+    <div class="example-contents">
+
+        <p>This also create a configuration handler to provide Web configuration. The
+            mechanism for creating other roles pretty much the same, although some roles require
+            an bootstrap (looup service) endpoint. </p>
+            <pre class="programlisting">
+                Attic attic = new Attic();
+                attic.setRole(StringConstants.ROLE_DL);
+                attic.attach("attic", new ConfigServiceRole());
+                DataLookup dl = new DataLookup();
+                attic.attach(StringConstants.DATA_LOOKUP, dl);
+                attic.init();
+            </pre>
+    </div>
+</div>
+<br class="example-break">
+
+<div class="example"><a name="d4e685"></a>
+
+    <p class="title"><b>Example&nbsp;6.&nbsp;Creating a <code class="code">DataCenter</code> with a particular query interval. </b></p>
+
+    <div class="example-contents">
+
+        <p>Note the setting of a bootstrap endpoint from which pointers can be retrieved.
+            This is typically a lookup service endpoint, e.g.,
+            https://example.org/dl/meta/pointer </p>
+            <pre class="programlisting">
+                Attic attic = new Attic();
+                attic.setRole(StringConstants.ROLE_DC);
+                attic.getDataConfig().setDataQueryInterval(120);
+                attic.setBootstrapEndpoint("https://example.org/dl/meta/pointer");
+                DataCenter dc = new DataCenter();
+                attic.attach(StringConstants.DATA_CENTER, dc);
+                attic.init();
+            </pre>
+    </div>
+</div>
+<br class="example-break">
+
+<div class="example"><a name="d4e690"></a>
+
+    <p class="title"><b>Example&nbsp;7.&nbsp;Creating an Attic supporting multiple roles</b></p>
+
+    <div class="example-contents">
+            
+            <pre class="programlisting">
+                Attic attic = new Attic();
+                attic.addRole(StringConstants.ROLE_DC);
+                attic.getDataConfig().setDataQueryInterval(120);
+                attic.setBootstrapEndpoint("https://example.org/dl/meta/pointer");
+                DataCenter dc = new DataCenter();
+                attic.attach(StringConstants.DATA_CENTER, dc);
+                attic.addRole(StringConstants.ROLE_DL);
+                DataLookup dl = new DataLookup();
+                attic.attach(StringConstants.DATA_LOOKUP, dl);
+                attic.init();
+            </pre>
+    </div>
+</div>
+<br class="example-break">
+
+<div class="example"><a name="d4e693"></a>
+
+    <p class="title"><b>Example&nbsp;8.&nbsp;Creating a Secured <code class="code">DataSeed</code>
+    </b></p>
+
+    <div class="example-contents">
+
+        <p>This maps two keystores to a default authority. The trust store contains the CA
+            root certificate. Any clients who have a certificate signed by this ca will be able
+            to perform actions that are subject to DN name authorization. It then adds two DNs
+            mapped to the <code class="code">CACHE</code> action. These DNs belong to Data centers that are
+            allowed to query for cached data from the seed. </p>
+            <pre class="programlisting">
+                Attic attic = new Attic();
+                attic.setBootstrapEndpoint("https://example.org/dl/meta/pointer");
+                attic.addRole(StringConstants.ROLE_DS);
+                DataSeed dataSeed = new DataSeed();
+                attic.attach(StringConstants.DATA_PUBLISHER, dataSeed);
+
+                // set up keystores and security config.
+                // These are stored, so actually this doesn't have to be done on every start up
+                SecurityConfig sc = attic.getSecurityConfig();
+                sc.setSecure(true);
+                sc.setRequireClientAuthentication(true);
+                URL trustUrl = getClass().getClassLoader().getResource("keystores/trust.keystore");
+                String trust = trustUrl.toString();
+                Keystore ts = new Keystore(trust, "ca-keystore-password", "ca-keystore-alias");
+                ts.setName(key + "-trust.properties");
+                sc.addTrustStore(ts);
+                URL keyUrl = getClass().getClassLoader().getResource("keystores/seed-key.keystore");
+                String keystore = keyUrl.toString();
+                Keystore ks = new Keystore(keystore, "seed-keystore-password", "seed-keystore-alias");
+                ks.setName("seed-key.properties");
+                sc.addKeyStore(ks);
+
+                attic.init();
+
+                // NOTE: adding DN names after init method
+                dataSeed.addIdentity("CN=machine1.example.org, OU=attic, O=Example, L=Cardiff, ST=Wales, C=UK",
+                StringConstants.CACHE_KEY);
+                dataSeed.addIdentity("CN=machine2.example.org, OU=attic, O=Example, L=Cardiff, ST=Wales, C=UK",
+                StringConstants.CACHE_KEY);
+            </pre>
+    </div>
+</div>
+<br class="example-break">
+
+<div class="example"><a name="d4e699"></a>
+
+    <p class="title"><b>Example&nbsp;9.&nbsp;XML rendering of a DataAdvert</b></p>
+
+    <div class="example-contents">
+            
+
+            <pre class="programlisting">
+                &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+                &lt;DataAdvert xmlns="http://atticfs.org"&gt;
+                &lt;DataDescription xmlns="http://p2p-adics.org"&gt;
+                &lt;id&gt;12c667d6-2d5d-4904-9c2c-6746251b81ef&lt;/id&gt;
+                &lt;name&gt;04Orange.mp3&lt;/name&gt;
+                &lt;project&gt;Colours&lt;/project&gt;
+                &lt;description&gt;Miles on Orange&lt;/description&gt;
+                &lt;FileHash&gt;
+                &lt;hash&gt;661c7f5e462be8ced9a8a6d8a1c7e6&lt;/hash&gt;
+                &lt;size&gt;12407432&lt;/size&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;bedbfd11fa5fb4fd6b97349f45b6b3&lt;/hash&gt;
+                &lt;start&gt;0&lt;/start&gt;
+                &lt;end&gt;524287&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;8c8414acf8f15420fbb2ad5c531bb3&lt;/hash&gt;
+                &lt;start&gt;524288&lt;/start&gt;
+                &lt;end&gt;1048575&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;b280eb92b757899b82e081b810c7f5&lt;/hash&gt;
+                &lt;start&gt;1048576&lt;/start&gt;
+                &lt;end&gt;1572863&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;2fd8783ec76edb168ccbbcbe8326cdee&lt;/hash&gt;
+                &lt;start&gt;1572864&lt;/start&gt;
+                &lt;end&gt;2097151&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;13beab083dbcee8f58fae2274bc8&lt;/hash&gt;
+                &lt;start&gt;2097152&lt;/start&gt;
+                &lt;end&gt;2621439&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;7715255bdf9fedfb53b427e9b7edc&lt;/hash&gt;
+                &lt;start&gt;2621440&lt;/start&gt;
+                &lt;end&gt;3145727&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;27328f8c53fb05869dc33045e7078&lt;/hash&gt;
+                &lt;start&gt;3145728&lt;/start&gt;
+                &lt;end&gt;3670015&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;1e43ade4d9c04e5b13b4583319c546ba&lt;/hash&gt;
+                &lt;start&gt;3670016&lt;/start&gt;
+                &lt;end&gt;4194303&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;2ca28e60dab78dc2111a488726df41f9&lt;/hash&gt;
+                &lt;start&gt;4194304&lt;/start&gt;
+                &lt;end&gt;4718591&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;5553dca5b9638a8ae3b89b1cd5566&lt;/hash&gt;
+                &lt;start&gt;4718592&lt;/start&gt;
+                &lt;end&gt;5242879&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;1a28cd99cfaae2ec5ddbc2371d56ba71&lt;/hash&gt;
+                &lt;start&gt;5242880&lt;/start&gt;
+                &lt;end&gt;5767167&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;aa239f8aeb12839ab89fde66c6788ae&lt;/hash&gt;
+                &lt;start&gt;5767168&lt;/start&gt;
+                &lt;end&gt;6291455&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;8a10fdf1d2db2465f46cfc6957e5421&lt;/hash&gt;
+                &lt;start&gt;6291456&lt;/start&gt;
+                &lt;end&gt;6815743&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;d4c7ac60f67e9bded695ca9a625cbb2&lt;/hash&gt;
+                &lt;start&gt;6815744&lt;/start&gt;
+                &lt;end&gt;7340031&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;aae1ff17dd8b9f753bf9294f915f599c&lt;/hash&gt;
+                &lt;start&gt;7340032&lt;/start&gt;
+                &lt;end&gt;7864319&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;ede210539640afb878d9bc312aec59f&lt;/hash&gt;
+                &lt;start&gt;7864320&lt;/start&gt;
+                &lt;end&gt;8388607&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;23eee99dd034504728409ba19352f2dc&lt;/hash&gt;
+                &lt;start&gt;8388608&lt;/start&gt;
+                &lt;end&gt;8912895&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;252abbaf437e7a10d34aab551293d3&lt;/hash&gt;
+                &lt;start&gt;8912896&lt;/start&gt;
+                &lt;end&gt;9437183&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;e6b1536d6bfe88d8189d94293ab84590&lt;/hash&gt;
+                &lt;start&gt;9437184&lt;/start&gt;
+                &lt;end&gt;9961471&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;1099a22c9fa4423c46c6fd39e1689e0&lt;/hash&gt;
+                &lt;start&gt;9961472&lt;/start&gt;
+                &lt;end&gt;10485759&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;d7beadebad9a912a5ef9fdfcd25cd176&lt;/hash&gt;
+                &lt;start&gt;10485760&lt;/start&gt;
+                &lt;end&gt;11010047&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;a0d19f13ec8416a4c2d38426707f7&lt;/hash&gt;
+                &lt;start&gt;11010048&lt;/start&gt;
+                &lt;end&gt;11534335&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;12686ee83e4fbe664f44cae14e95&lt;/hash&gt;
+                &lt;start&gt;11534336&lt;/start&gt;
+                &lt;end&gt;12058623&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;Segment&gt;
+                &lt;hash&gt;32ce5368d98243a2a9abeccc2ddc5c&lt;/hash&gt;
+                &lt;start&gt;12058624&lt;/start&gt;
+                &lt;end&gt;12407431&lt;/end&gt;
+                &lt;/Segment&gt;
+                &lt;/FileHash&gt;
+                &lt;/DataDescription&gt;
+                &lt;Constraints&gt;
+                &lt;Constraint type="Date"&gt;
+                &lt;key&gt;expires&lt;/key&gt;
+                &lt;value&gt;Thu, 01 Jan 1970 00:00:01 GMT&lt;/value&gt;
+                &lt;/Constraint&gt;
+                &lt;Constraint type="Integer"&gt;
+                &lt;key&gt;replica&lt;/key&gt;
+                &lt;value&gt;3&lt;/value&gt;
+                &lt;/Constraint&gt;
+                &lt;/Constraints&gt;
+                &lt;/DataAdvert&gt;
+            </pre>
+    </div>
+</div>
+<br class="example-break">
+
+<div class="example"><a name="d4e702"></a>
+
+    <p class="title"><b>Example&nbsp;10.&nbsp;JSON rendering of a DataAdvert</b></p>
+
+    <div class="example-contents">
+            
+
+            <pre class="programlisting">
+                
+ {
+    "DataAdvert": {
+        "DataDescription": {
+            "id": "b426c41b-d5a3-4138-93ec-60a8be2a6c0c",
+            "name": "04Orange.mp3",
+            "project": "Colours",
+            "description": "Miles on Orange",
+            "location": null,
+            "FileHash": {
+                "hash": "661c7f5e462be8ced9a8a6d8a1c7e6",
+                "size": 12407432,
+                "Segment": [
+                    {
+                        "hash": "bedbfd11fa5fb4fd6b97349f45b6b3",
+                        "start": 0,
+                        "end": 524287 
+                    },
+                    {
+                        "hash": "8c8414acf8f15420fbb2ad5c531bb3",
+                        "start": 524288,
+                        "end": 1048575 
+                    },
+                    {
+                        "hash": "b280eb92b757899b82e081b810c7f5",
+                        "start": 1048576,
+                        "end": 1572863 
+                    },
+                    {
+                        "hash": "2fd8783ec76edb168ccbbcbe8326cdee",
+                        "start": 1572864,
+                        "end": 2097151 
+                    },
+                    {
+                        "hash": "13beab083dbcee8f58fae2274bc8",
+                        "start": 2097152,
+                        "end": 2621439 
+                    },
+                    {
+                        "hash": "7715255bdf9fedfb53b427e9b7edc",
+                        "start": 2621440,
+                        "end": 3145727 
+                    },
+                    {
+                        "hash": "27328f8c53fb05869dc33045e7078",
+                        "start": 3145728,
+                        "end": 3670015 
+                    },
+                    {
+                        "hash": "1e43ade4d9c04e5b13b4583319c546ba",
+                        "start": 3670016,
+                        "end": 4194303 
+                    },
+                    {
+                        "hash": "2ca28e60dab78dc2111a488726df41f9",
+                        "start": 4194304,
+                        "end": 4718591 
+                    },
+                    {
+                        "hash": "5553dca5b9638a8ae3b89b1cd5566",
+                        "start": 4718592,
+                        "end": 5242879 
+                    },
+                    {
+                        "hash": "1a28cd99cfaae2ec5ddbc2371d56ba71",
+                        "start": 5242880,
+                        "end": 5767167 
+                    },
+                    {
+                        "hash": "aa239f8aeb12839ab89fde66c6788ae",
+                        "start": 5767168,
+                        "end": 6291455 
+                    },
+                    {
+                        "hash": "8a10fdf1d2db2465f46cfc6957e5421",
+                        "start": 6291456,
+                        "end": 6815743 
+                    },
+                    {
+                        "hash": "d4c7ac60f67e9bded695ca9a625cbb2",
+                        "start": 6815744,
+                        "end": 7340031 
+                    },
+                    {
+                        "hash": "aae1ff17dd8b9f753bf9294f915f599c",
+                        "start": 7340032,
+                        "end": 7864319 
+                    },
+                    {
+                        "hash": "ede210539640afb878d9bc312aec59f",
+                        "start": 7864320,
+                        "end": 8388607 
+                    },
+                    {
+                        "hash": "23eee99dd034504728409ba19352f2dc",
+                        "start": 8388608,
+                        "end": 8912895 
+                    },
+                    {
+                        "hash": "252abbaf437e7a10d34aab551293d3",
+                        "start": 8912896,
+                        "end": 9437183 
+                    },
+                    {
+                        "hash": "e6b1536d6bfe88d8189d94293ab84590",
+                        "start": 9437184,
+                        "end": 9961471 
+                    },
+                    {
+                        "hash": "1099a22c9fa4423c46c6fd39e1689e0",
+                        "start": 9961472,
+                        "end": 10485759 
+                    },
+                    {
+                        "hash": "d7beadebad9a912a5ef9fdfcd25cd176",
+                        "start": 10485760,
+                        "end": 11010047 
+                    },
+                    {
+                        "hash": "a0d19f13ec8416a4c2d38426707f7",
+                        "start": 11010048,
+                        "end": 11534335 
+                    },
+                    {
+                        "hash": "12686ee83e4fbe664f44cae14e95",
+                        "start": 11534336,
+                        "end": 12058623 
+                    },
+                    {
+                        "hash": "32ce5368d98243a2a9abeccc2ddc5c",
+                        "start": 12058624,
+                        "end": 12407431 
+                    } 
+                ] 
+            } 
+        },
+        "Constraints": {
+            "Constraint": [
+                {
+                    "type": "Date",
+                    "key": "expires",
+                    "value": "Thu, 01 Jan 1970 00:00:01 GMT" 
+                },
+                {
+                    "type": "Integer",
+                    "key": "replica",
+                    "value": "3" 
+                } 
+            ] 
+        } 
+    }
+}
+
+            </pre>
+    </div>
+</div>
+<br class="example-break">
+
+
+</div>
+
+
+</div>
+</body>
+</html>

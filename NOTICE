@@ -1,0 +1,14 @@
+   Attic
+   Copyright 2005-2012 Cardiff University & The Authors
+
+   This product includes software developed at the
+   School of Computer Science & Informatics, Cardiff University 
+   (http://www.cs.cf.ac.uk)
+
+   Portions of this software were developed under funding from the 
+   European Union Framework 7 Programme under the EU EDGeS and EDGI
+   grants.
+
+   This software uses the  The Legion Of The Bouncy Castle 
+   (http://www.bouncycastle.org) libraries for SSL and certificate 
+   management.  Those are provided under an MIT X11 open-source license.

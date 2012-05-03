@@ -1,0 +1,57 @@
+                                                                        ---------
+                                                                    Attic File System
+                                                                        ---------
+                                                                       Ian Kelley
+                                                                        ---------
+                                                                      3 February 2012 
+									
+Overview
+
+	The Attic File System, previously the Peer-to-Peer Arhictecture for Data-Intensive Cycle Sharing (ADICS), is P2P data sharing
+	software architecture currently being developed as part of the EU FP7 {{{http://www.edgi-grid.eu/}EDGI}} 
+	project with previous support from the EU FP7 {{{http://www.edges-grid.eu/}EDGeS}} project and {{{http://www.epsrc.ac.uk/}EPSRC}} grant EP/C006291/1. Attic is working to
+	provide a simple means for scientific applications, especially volunteer computing projects such as 
+	BOINC that leverage idle CPU power, to also take advantage of the network and storage resources 
+	available on the network.
+
+	The Attic software is made up of three main elements:
+	
+	* a client application that allows for the downloading of data from peers on the network
+
+	* a data serving (i.e., caching) application that replicates data on the network
+
+	* a metadata lookup service that keeps track of which peers have individual data items
+
+	
+Attic Network
+
+	That Attic network differs from many other Peer-to-Peer networks in that it allows for the
+	explicit separation of the data-sharing nodes from other participants in the network.  This
+	customisable provisioning of the network has a three-fold benefit to general applications and
+	scientific volunteer computing projects in general:
+
+	* it allows for security criteria and replication strategies to be imposed upon data sharing peers
+
+	* it isolates the clients on the network from participating in the data-sharing overlay should they choose not to
+
+	* it provides a mechanism for central servers to offload data distribution to a trusted overlay
+
+	[]
+
+
+[./images/networkoverview.png]
+
+
+Attic Features 
+
+	* Provides a buffer between data producers and data consumers
+
+	* File swarming to maximise data propagation and client-download throughput
+
+	* HTTP interface to support legacy application integration and browser downloads
+
+	* Employment of X.509 credentials for authentication and authorisation
+
+	* Support for granular security policies to suit project requirements
+
+	[]

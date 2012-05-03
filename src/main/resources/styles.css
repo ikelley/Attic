@@ -1,0 +1,111 @@
+body {
+    padding: 10px 10px 10px 10px;
+}
+
+body, td, select, input, li {
+    font-family: Verdana, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+}
+
+code {
+    font-family: Courier, monospace;
+    font-size: 13px;
+    color: #312e04;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:link {
+    color: #E87800;
+}
+
+a:visited {
+    color: #E87800;
+}
+
+a:active, a:hover {
+    color: #531AFF;
+}
+
+h1, h2 {
+    padding: 4px 4px 4px 6px;
+    border: 1px solid #E87800;
+    width: 90%;
+    color: #E87800;
+    background-color: #EBEBEB;
+    font-weight: 900;
+    font-size: x-large;
+}
+
+h3, h4, h5 {
+    padding: 4px 4px 4px 6px;
+    color: #545F81;
+    font-size: medium;
+}
+
+p, li, dl, small {
+    line-height: 1.3em;
+    font-size: small;
+    color: #545F81;
+}
+
+dt, dd {
+    color: #E87800;
+}
+
+dt {
+    font-weight: bold;
+}
+
+label {
+    width: 30em;
+    float: left;
+    margin-right: 0.5em;
+    margin-top: 0.5em;
+    display: block
+}
+
+input {
+    clear: both;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    clear: right;
+}
+
+.wspeermain {
+    width: 50em;
+    margin: 0 auto;
+}
+
+fieldset {
+    border: 1px solid #E87800;
+    width: 45em;
+    margin-top: 5px;
+}
+
+legend {
+    color: #fff;
+    background: #FF9900;
+    border: 1px solid #E87800;
+    padding: 2px 6px;
+}
+
+.attic-segment, .attic-endpoint {
+    margin-left: 20px;
+
+}
+
+.attic-field {
+    display: block;
+    width: 80%;
+    background: #ffffcc;
+    font-weight: bold;
+    padding-top: 1px;
+}
+
+.attic-field-val {
+    font-weight: normal;
+
+}
