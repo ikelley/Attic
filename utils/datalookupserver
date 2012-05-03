@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# PORT HOME XML|JSON|XHTML
+# Running Example:  ./<script> out JSON 
+#
+# runs a data lookup server
+# optional arg: location of attic home on local machine
+#ATTIC_LIB=lib/attic-all-2.0.jar
+#ATTIC_CLASS=org.atticfs.roleservices.run.Dlookup
+ATTIC_LIB=lib/attic-all-1.0.jar
+ATTIC_CLASS=org.atticfs.test.demo.Dlookup
+
+
+PORT="7048"
+
+if [ "$1" = "" ]; then
+   ATTIC_HOME=AtticStore
+else
+   ATTIC_HOME=$1
+fi
+
+if [ "$2" = "" ]; then
+   MSGTYPE=JSON
+else 
+   MSGTYPE=$2
+fi
+
+JAVA="java"
+
+if [ "$JAVA_HOME" != "" ] ; then
+    JAVA="$JAVA_HOME/bin/java"
+fi
+
+CP=.:lib/bcprov-jdk15-140.jar:$ATTIC_LIB
+#for i in `find lib -name '*.jar'`; do
+#    CP="$CP:$i"
+#done
+
+$JAVA -Xms400m -Xmx1500m -classpath $CP -Djava.util.logging.config.file=./logging.properties $ATTIC_CLASS $PORT $ATTIC_HOME $MSGTYPE

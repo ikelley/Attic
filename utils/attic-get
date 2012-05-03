@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#
+# runs a data worker
+# this script can receive piped input
+# optional arg: location of attic home on local machine
+#
+#ATTIC_LIB=lib/attic-all-2.0.jar
+#ATTIC_CLASS=org.atticfs.roleservices.run.Dworker
+ATTIC_LIB=lib/attic-all-1.0.jar
+ATTIC_CLASS=org.atticfs.test.demo.Dworker
+
+pointer=$1
+
+if [ "$pointer" = "" ]; then
+	pointer="`cat`"
+fi
+
+JAVA="java"
+
+if [ "$JAVA_HOME" != "" ] ; then
+    JAVA="$JAVA_HOME/bin/java"
+fi
+
+CP=.:lib/bcprov-jdk15-140.jar:$ATTIC_LIB
+#for i in `find lib -name '*.jar'`; do
+#    CP="$CP:$i"
+#done
+
+$JAVA -classpath $CP -Djava.util.logging.config.file=./logging.properties $ATTIC_CLASS $pointer $2 $3 $4 $5
